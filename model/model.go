@@ -17,6 +17,15 @@ type Service struct {
 
 var SwarmService *Service
 
+func (s *Service) GetService(serviceID string) *swarm.Service {
+	for _, srv := range s.Services {
+		if srv.ID == serviceID {
+			return &srv
+		}
+	}
+	return nil
+}
+
 func init() {
 
 	client, err := docker.NewClientFromEnv()

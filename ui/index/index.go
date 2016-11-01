@@ -1,6 +1,8 @@
 package index
 
 import (
+	"fmt"
+
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/netice9/swarm-intelligence/model"
 	"github.com/netice9/swarm-intelligence/ui/layout"
@@ -29,8 +31,6 @@ var serviceListItemUI = core.MustParseDisplayModel(`
   <bs.ListGroupItem id="service"/>
 `)
 
-var boardLinkUI = core.MustParseDisplayModel(`<bs.ListGroupItem id="link"/>`)
-
 func (i *Index) Mount() {
 	i.services = model.SwarmService.Services
 	i.render()
@@ -44,6 +44,7 @@ func (i *Index) render() {
 		name := s.Spec.Name
 		item := serviceListItemUI.DeepCopy()
 		item.SetElementText("service", name)
+		item.SetElementAttribute("service", "href", fmt.Sprintf("#/service/%s", s.ID))
 		m.AppendChild("services", item)
 	}
 	i.ctx.UpdateScreen(&core.DisplayUpdate{Model: layout.WithLayout(m)})
