@@ -20,7 +20,6 @@ type ServiceUI struct {
 func ServiceUIFactory(ctx reactor.ScreenContext) reactor.Screen {
 	serviceID := ctx.Params["id"]
 	service := model.SwarmService.GetService(serviceID)
-	fmt.Println("service created")
 	return &ServiceUI{
 		ctx:     ctx,
 		ID:      serviceID,
