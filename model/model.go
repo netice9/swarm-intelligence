@@ -1,10 +1,11 @@
 package model
 
 import (
+	"fmt"
 	"time"
 
-	"github.com/chuckpreslar/emission"
 	"github.com/docker/docker/api/types/swarm"
+	"github.com/draganm/emission"
 	"github.com/fsouza/go-dockerclient"
 )
 
@@ -13,6 +14,7 @@ type Service struct {
 	SwarmInfo swarm.Info
 	Services  []swarm.Service
 	Nodes     []swarm.Node
+	Tasks     []swarm.Task
 	*emission.Emitter
 }
 
@@ -22,6 +24,15 @@ func (s *Service) GetService(serviceID string) *swarm.Service {
 	for _, srv := range s.Services {
 		if srv.ID == serviceID {
 			return &srv
+		}
+	}
+	return nil
+}
+
+func (s *Service) GetTask(taskID string) *swarm.Task {
+	for _, tsk := range s.Tasks {
+		if tsk.ID == taskID {
+			return &tsk
 		}
 	}
 	return nil
@@ -56,12 +67,18 @@ func init() {
 		panic(err)
 	}
 
+	tasks, err := client.ListTasks(docker.ListTasksOptions{})
+	if err != nil {
+		panic(err)
+	}
+
 	SwarmService = &Service{
 		client:    client,
 		SwarmInfo: sw,
 		Services:  services,
 		Emitter:   emission.NewEmitter(),
 		Nodes:     nodes,
+		Tasks:     tasks,
 	}
 
 	go func() {
@@ -86,6 +103,21 @@ func init() {
 
 			if len(nodes) != len(SwarmService.Nodes) {
 				SwarmService.Emit("nodes", nodes)
+			}
+
+			tasks, err := client.ListTasks(docker.ListTasksOptions{})
+			if err != nil {
+				panic(err)
+			}
+
+			SwarmService.Tasks = tasks
+
+			if len(tasks) != len(SwarmService.Tasks) {
+				SwarmService.Emit("tasks", tasks)
+			}
+
+			for _, t := range tasks {
+				SwarmService.Emit(fmt.Sprintf("task/%s", t.ID), t)
 			}
 
 			time.Sleep(time.Second)

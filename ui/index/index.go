@@ -14,6 +14,7 @@ type Index struct {
 	ctx      reactor.ScreenContext
 	services []swarm.Service
 	nodes    []swarm.Node
+	tasks    []swarm.Task
 }
 
 func IndexFactory(ctx reactor.ScreenContext) reactor.Screen {
@@ -30,6 +31,9 @@ var ui = core.MustParseDisplayModel(`
 		<bs.Panel header="Nodes">
 	    <bs.ListGroup id="nodes"/>
 	  </bs.Panel>
+		<bs.Panel header="Tasks">
+	    <bs.ListGroup id="tasks"/>
+	  </bs.Panel>
 	</div>
 `)
 
@@ -41,12 +45,18 @@ var nodeListItemUI = core.MustParseDisplayModel(`
   <bs.ListGroupItem id="node"/>
 `)
 
+var taskListItemUI = core.MustParseDisplayModel(`
+  <bs.ListGroupItem id="task"/>
+`)
+
 func (i *Index) Mount() {
 	i.services = model.SwarmService.Services
 	i.nodes = model.SwarmService.Nodes
+	i.tasks = model.SwarmService.Tasks
 	i.render()
 	model.SwarmService.AddListener("services", i.OnServices)
 	model.SwarmService.AddListener("nodes", i.OnNodes)
+	model.SwarmService.AddListener("tasks", i.OnTasks)
 }
 
 func (i *Index) render() {
@@ -68,6 +78,14 @@ func (i *Index) render() {
 		m.AppendChild("nodes", item)
 	}
 
+	for _, t := range i.tasks {
+
+		item := taskListItemUI.DeepCopy()
+		item.SetElementText("task", t.ID)
+		item.SetElementAttribute("task", "href", fmt.Sprintf("#/task/%s", t.ID))
+		m.AppendChild("tasks", item)
+	}
+
 	i.ctx.UpdateScreen(&core.DisplayUpdate{Model: layout.WithLayout(m)})
 }
 
@@ -78,6 +96,11 @@ func (i *Index) OnServices(services []swarm.Service) {
 
 func (i *Index) OnNodes(nodes []swarm.Node) {
 	i.nodes = nodes
+	i.render()
+}
+
+func (i *Index) OnTasks(tasks []swarm.Task) {
+	i.tasks = tasks
 	i.render()
 }
 
