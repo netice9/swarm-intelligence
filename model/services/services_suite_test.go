@@ -2,7 +2,7 @@ package services_test
 
 import (
 	"github.com/docker/docker/api/types/swarm"
-	"github.com/netice9/swarm-intelligence/model"
+	"github.com/netice9/swarm-intelligence/event"
 	"github.com/netice9/swarm-intelligence/model/services"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -24,12 +24,12 @@ type FakeEmitter struct {
 	Events []RecordedEvent
 }
 
-func (f *FakeEmitter) Emit(event interface{}, arguments ...interface{}) model.EventEmitter {
+func (f *FakeEmitter) Emit(event interface{}, arguments ...interface{}) event.EventEmitter {
 	f.Events = append(f.Events, RecordedEvent{event, arguments})
 	return f
 }
-func (f *FakeEmitter) RemoveListener(event, listener interface{}) model.EventEmitter { return f }
-func (f *FakeEmitter) AddListener(event, listener interface{}) model.EventEmitter    { return f }
+func (f *FakeEmitter) RemoveListener(event, listener interface{}) event.EventEmitter { return f }
+func (f *FakeEmitter) AddListener(event, listener interface{}) event.EventEmitter    { return f }
 
 var _ = Describe("ServicesAggregator", func() {
 
