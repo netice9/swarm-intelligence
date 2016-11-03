@@ -68,7 +68,10 @@ func (sa *ServicesAggregator) OnServices(services []swarm.Service) {
 		newServiceList = append(newServiceList, ServiceStatus{Name: s.Spec.Name, ID: s.ID})
 		newServiceMap[s.ID] = s
 
-		if _, found := sa.current[s.ID]; found {
+		if current, found := sa.current[s.ID]; found {
+			if !reflect.DeepEqual(current, s) {
+				sa.Emit(fmt.Sprintf("update/%s", s.ID), s)
+			}
 			continue
 		}
 

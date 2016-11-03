@@ -1,6 +1,8 @@
 package services_test
 
 import (
+	"time"
+
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/netice9/swarm-intelligence/event"
 	"github.com/netice9/swarm-intelligence/model/services"
@@ -76,6 +78,41 @@ var _ = Describe("ServicesAggregator", func() {
 							{"list", []interface{}{services.ServiceList{{Name: "service1", ID: "id1"}}}},
 						}))
 				})
+
+				Context("When event for the same service, but with different value is received", func() {
+
+					var oldUpdate []swarm.Service
+
+					BeforeEach(func() {
+						oldUpdate = update
+						update = []swarm.Service{
+							swarm.Service{
+								ID: "id1",
+								Spec: swarm.ServiceSpec{
+									Annotations: swarm.Annotations{
+										Name: "service1",
+									},
+								},
+								Meta: swarm.Meta{
+									CreatedAt: time.Now(),
+								},
+							},
+						}
+
+						aggregator.OnServices(update)
+					})
+
+					It("Should fire new updated event for the service", func() {
+						Expect(emitter.Events).To(Equal(
+							[]RecordedEvent{
+								{"update/id1", []interface{}{oldUpdate[0]}},
+								{"list", []interface{}{services.ServiceList{{Name: "service1", ID: "id1"}}}},
+								{"update/id1", []interface{}{update[0]}},
+							}))
+					})
+
+				})
+
 				Context("When same event is received again", func() {
 					BeforeEach(func() {
 						aggregator.OnServices(update)
