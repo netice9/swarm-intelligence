@@ -9,6 +9,12 @@ import (
 	"github.com/fsouza/go-dockerclient"
 )
 
+type EventEmitter interface {
+	Emit(event interface{}, arguments ...interface{}) EventEmitter
+	RemoveListener(event, listener interface{}) EventEmitter
+	AddListener(event, listener interface{}) EventEmitter
+}
+
 type Service struct {
 	client    *docker.Client
 	SwarmInfo swarm.Info
