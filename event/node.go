@@ -3,15 +3,14 @@ package event
 import (
 	"time"
 
-	"github.com/draganm/emission"
 	"github.com/fsouza/go-dockerclient"
 )
 
-var Nodes *emission.Emitter = emission.NewEmitter()
+var Nodes = NewEmitterAdapter()
 
-var Tasks *emission.Emitter = emission.NewEmitter()
+var Tasks = NewEmitterAdapter()
 
-var Services *emission.Emitter = emission.NewEmitter()
+var Services = NewEmitterAdapter()
 
 func StartCollecting(client *docker.Client) {
 	go func() {

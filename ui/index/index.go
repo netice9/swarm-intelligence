@@ -5,6 +5,7 @@ import (
 
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/netice9/swarm-intelligence/model"
+	"github.com/netice9/swarm-intelligence/model/services"
 	"github.com/netice9/swarm-intelligence/ui/layout"
 	"gitlab.netice9.com/dragan/go-reactor"
 	"gitlab.netice9.com/dragan/go-reactor/core"
@@ -12,7 +13,7 @@ import (
 
 type Index struct {
 	ctx      reactor.ScreenContext
-	services []swarm.Service
+	services services.ServiceList
 	nodes    []swarm.Node
 	tasks    []swarm.Task
 }
@@ -50,7 +51,7 @@ var taskListItemUI = core.MustParseDisplayModel(`
 `)
 
 func (i *Index) Mount() {
-	i.services = model.SwarmService.Services
+	i.services = model.Services.ServiceList()
 	i.nodes = model.SwarmService.Nodes
 	i.tasks = model.SwarmService.Tasks
 	i.render()
@@ -63,7 +64,7 @@ func (i *Index) render() {
 	m := ui.DeepCopy()
 	// m.SetElementText(id string, text string)
 	for _, s := range i.services {
-		name := s.Spec.Name
+		name := s.Name
 		item := serviceListItemUI.DeepCopy()
 		item.SetElementText("service", name)
 		item.SetElementAttribute("service", "href", fmt.Sprintf("#/service/%s", s.ID))
@@ -89,7 +90,7 @@ func (i *Index) render() {
 	i.ctx.UpdateScreen(&core.DisplayUpdate{Model: layout.WithLayout(m)})
 }
 
-func (i *Index) OnServices(services []swarm.Service) {
+func (i *Index) OnServices(services services.ServiceList) {
 	i.services = services
 	i.render()
 }

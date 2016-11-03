@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	"github.com/docker/docker/api/types/swarm"
-	"github.com/netice9/swarm-intelligence/model"
+	"github.com/netice9/swarm-intelligence/event"
 )
 
 type ServiceStatus struct {
@@ -39,7 +39,7 @@ type ServicesAggregator struct {
 	sync.Mutex
 	// current []swarm.Service
 	current map[string]swarm.Service
-	model.EventEmitter
+	event.EventEmitter
 	serviceList ServiceList
 }
 
@@ -49,7 +49,7 @@ func (sa *ServicesAggregator) ServiceList() []ServiceStatus {
 	return sa.serviceList
 }
 
-func NewServicesAggregator(ee model.EventEmitter) *ServicesAggregator {
+func NewServicesAggregator(ee event.EventEmitter) *ServicesAggregator {
 	return &ServicesAggregator{
 		EventEmitter: ee,
 		current:      map[string]swarm.Service{},
