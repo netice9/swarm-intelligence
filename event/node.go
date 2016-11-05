@@ -12,6 +12,8 @@ var Tasks = NewEmitterAdapter()
 
 var Services = NewEmitterAdapter()
 
+var ContainerStats = NewEmitterAdapter()
+
 func StartCollecting(client *docker.Client) {
 	go func() {
 		for {
