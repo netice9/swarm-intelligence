@@ -18,29 +18,30 @@ type ServiceStatus struct {
 
 type ServiceInfo struct {
 	Service swarm.Service
-	Tasks   map[string]swarm.Task
+	Tasks   map[string]TaskInfo
 }
 
 func NewServiceInfo(service swarm.Service) *ServiceInfo {
 	return &ServiceInfo{
 		Service: service,
-		Tasks:   map[string]swarm.Task{},
+		Tasks:   map[string]TaskInfo{},
 	}
 }
 
 func (s *ServiceInfo) UpdateTasks(tasks []swarm.Task) bool {
 	changed := false
 
-	newTasks := map[string]swarm.Task{}
+	newTasks := map[string]TaskInfo{}
 
 	for _, task := range tasks {
 		current, found := s.Tasks[task.ID]
-		newTasks[task.ID] = task
+		currentTask := NewTaskInfo(task)
+		newTasks[task.ID] = currentTask
 		if !found {
 			changed = true
 			continue
 		}
-		if !reflect.DeepEqual(task, current) {
+		if !reflect.DeepEqual(currentTask, current) {
 
 			changed = true
 		}
@@ -73,6 +74,26 @@ func (sl ServiceList) Less(i, j int) bool {
 // Swap swaps the elements with indexes i and j.
 func (sl ServiceList) Swap(i, j int) {
 	sl[i], sl[j] = sl[j], sl[i]
+}
+
+type TaskInfo struct {
+	ID           string
+	State        string
+	DesiredState string
+	Slot         int
+	NodeID       string
+	ContainerID  string
+}
+
+func NewTaskInfo(t swarm.Task) TaskInfo {
+	return TaskInfo{
+		ID:           t.ID,
+		State:        string(t.Status.State),
+		DesiredState: string(t.DesiredState),
+		Slot:         t.Slot,
+		NodeID:       t.NodeID,
+		ContainerID:  t.Status.ContainerStatus.ContainerID,
+	}
 }
 
 type ServicesAggregator struct {
@@ -123,7 +144,6 @@ func (sa *ServicesAggregator) OnTasks(tasks []swarm.Task) {
 	for id, s := range sa.current {
 		updated := s.UpdateTasks(tasksByService[id])
 		if updated {
-			log.Println("updated", id)
 			sa.Emit(fmt.Sprintf("update/%s", id), s)
 		}
 	}
