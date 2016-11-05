@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"sort"
 	"sync"
@@ -13,6 +14,45 @@ import (
 type ServiceStatus struct {
 	Name string
 	ID   string
+}
+
+type ServiceInfo struct {
+	Service swarm.Service
+	Tasks   map[string]swarm.Task
+}
+
+func NewServiceInfo(service swarm.Service) *ServiceInfo {
+	return &ServiceInfo{
+		Service: service,
+		Tasks:   map[string]swarm.Task{},
+	}
+}
+
+func (s *ServiceInfo) UpdateTasks(tasks []swarm.Task) bool {
+	changed := false
+
+	newTasks := map[string]swarm.Task{}
+
+	for _, task := range tasks {
+		current, found := s.Tasks[task.ID]
+		newTasks[task.ID] = task
+		if !found {
+			changed = true
+			continue
+		}
+		if !reflect.DeepEqual(task, current) {
+
+			changed = true
+		}
+	}
+
+	for id := range s.Tasks {
+		if _, found := newTasks[id]; !found {
+			changed = true
+		}
+	}
+	s.Tasks = newTasks
+	return changed
 }
 
 type ServiceList []ServiceStatus
@@ -37,10 +77,16 @@ func (sl ServiceList) Swap(i, j int) {
 
 type ServicesAggregator struct {
 	sync.Mutex
-	// current []swarm.Service
-	current map[string]swarm.Service
+	current map[string]*ServiceInfo
 	event.EventEmitter
 	serviceList ServiceList
+}
+
+func NewServicesAggregator(ee event.EventEmitter) *ServicesAggregator {
+	return &ServicesAggregator{
+		EventEmitter: ee,
+		current:      map[string]*ServiceInfo{},
+	}
 }
 
 func (sa *ServicesAggregator) ServiceList() []ServiceStatus {
@@ -49,11 +95,39 @@ func (sa *ServicesAggregator) ServiceList() []ServiceStatus {
 	return sa.serviceList
 }
 
-func NewServicesAggregator(ee event.EventEmitter) *ServicesAggregator {
-	return &ServicesAggregator{
-		EventEmitter: ee,
-		current:      map[string]swarm.Service{},
+func (sa *ServicesAggregator) GetServiceInfo(serviceID string) *ServiceInfo {
+	sa.Lock()
+	defer sa.Unlock()
+	return sa.current[serviceID]
+}
+
+func (sa *ServicesAggregator) OnTasks(tasks []swarm.Task) {
+
+	sa.Lock()
+	defer sa.Unlock()
+
+	tasksByService := map[string][]swarm.Task{}
+	for id := range sa.current {
+		tasksByService[id] = []swarm.Task{}
 	}
+
+	for _, t := range tasks {
+		_, found := sa.current[t.ServiceID]
+		if found {
+			tasksByService[t.ServiceID] = append(tasksByService[t.ServiceID], t)
+			continue
+		}
+		log.Printf("Got task for not existing service %#v\n", t)
+	}
+
+	for id, s := range sa.current {
+		updated := s.UpdateTasks(tasksByService[id])
+		if updated {
+			log.Println("updated", id)
+			sa.Emit(fmt.Sprintf("update/%s", id), s)
+		}
+	}
+
 }
 
 func (sa *ServicesAggregator) OnServices(services []swarm.Service) {
@@ -62,20 +136,27 @@ func (sa *ServicesAggregator) OnServices(services []swarm.Service) {
 
 	newServiceList := ServiceList{}
 
-	newServiceMap := map[string]swarm.Service{}
+	newServiceMap := map[string]*ServiceInfo{}
 
 	for _, s := range services {
 		newServiceList = append(newServiceList, ServiceStatus{Name: s.Spec.Name, ID: s.ID})
-		newServiceMap[s.ID] = s
 
 		if current, found := sa.current[s.ID]; found {
-			if !reflect.DeepEqual(current, s) {
+
+			if !reflect.DeepEqual(current.Service, s) {
+				// newServiceMap[s.ID] = s
+				current.Service = s
 				sa.Emit(fmt.Sprintf("update/%s", s.ID), s)
 			}
+
+			newServiceMap[s.ID] = current
+
 			continue
 		}
 
-		sa.current[s.ID] = s
+		serviceInfo := NewServiceInfo(s)
+
+		newServiceMap[s.ID] = serviceInfo
 
 		sa.Emit(fmt.Sprintf("update/%s", s.ID), s)
 

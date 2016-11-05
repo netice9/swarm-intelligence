@@ -12,22 +12,12 @@ import (
 type Service struct {
 	client    *docker.Client
 	SwarmInfo swarm.Info
-	Services  []swarm.Service
 	Nodes     []swarm.Node
 	Tasks     []swarm.Task
 	*emission.Emitter
 }
 
 var SwarmService *Service
-
-func (s *Service) GetService(serviceID string) *swarm.Service {
-	for _, srv := range s.Services {
-		if srv.ID == serviceID {
-			return &srv
-		}
-	}
-	return nil
-}
 
 func (s *Service) GetTask(taskID string) *swarm.Task {
 	for _, tsk := range s.Tasks {
@@ -57,11 +47,6 @@ func init() {
 	info, err := client.Info()
 	sw := info.Swarm
 
-	services, err := client.ListServices(docker.ListServicesOptions{})
-	if err != nil {
-		panic(err)
-	}
-
 	nodes, err := client.ListNodes(docker.ListNodesOptions{})
 	if err != nil {
 		panic(err)
@@ -75,7 +60,6 @@ func init() {
 	SwarmService = &Service{
 		client:    client,
 		SwarmInfo: sw,
-		Services:  services,
 		Emitter:   emission.NewEmitter(),
 		Nodes:     nodes,
 		Tasks:     tasks,
@@ -83,16 +67,6 @@ func init() {
 
 	go func() {
 		for {
-			services, err := client.ListServices(docker.ListServicesOptions{})
-			if err != nil {
-				panic(err)
-			}
-
-			SwarmService.Services = services
-
-			if len(services) != len(SwarmService.Services) {
-				SwarmService.Emit("services", services)
-			}
 
 			nodes, err := client.ListNodes(docker.ListNodesOptions{})
 			if err != nil {
