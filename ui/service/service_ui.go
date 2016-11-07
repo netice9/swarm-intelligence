@@ -67,6 +67,7 @@ func (s *ServiceUI) render() {
 			style = "danger"
 		}
 		item.SetElementAttribute("item", "bsStyle", style)
+		item.SetElementAttribute("item", "href", fmt.Sprintf("#/task/%s", t.ID))
 		m.AppendChild("taskList", item)
 	}
 
