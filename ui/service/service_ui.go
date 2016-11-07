@@ -28,9 +28,23 @@ func ServiceUIFactory(ctx reactor.ScreenContext) reactor.Screen {
 }
 
 var ui = core.MustParseDisplayModel(`
-  <bs.Panel id="mainPanel" >
-		<pre id="text"/>
-  </bs.Panel>
+	<div>
+		<div class="page-header">
+	  	<h1>Service <span id="serviceName">Name of the service</span>: <small id="serviceID">Subtext for header</small></h1>
+		</div>
+
+		<bs.Panel header="Tasks" >
+			<bs.ListGroup id="taskList" />
+		</bs.Panel>
+
+	  <bs.Panel header="Descriptor" >
+			<pre id="text"/>
+	  </bs.Panel>
+	</div>
+`)
+
+var taskItemUI = core.MustParseDisplayModel(`
+	<bs.ListGroupItem id="item" header="Heading 1">Some body text</bs.ListGroupItem>
 `)
 
 func (s *ServiceUI) Mount() {
@@ -40,7 +54,21 @@ func (s *ServiceUI) Mount() {
 
 func (s *ServiceUI) render() {
 	m := ui.DeepCopy()
-	m.SetElementAttribute("mainPanel", "header", fmt.Sprintf("Service %s", s.service.Service.Spec.Name))
+
+	m.SetElementText("serviceName", s.service.Service.Spec.Name)
+	m.SetElementText("serviceID", s.service.Service.ID)
+
+	for _, t := range s.service.GetTasks() {
+		item := taskItemUI.DeepCopy()
+		item.SetElementAttribute("item", "header", t.ID)
+		item.SetElementText("item", t.State)
+		style := "success"
+		if t.State == "failed" {
+			style = "danger"
+		}
+		item.SetElementAttribute("item", "bsStyle", style)
+		m.AppendChild("taskList", item)
+	}
 
 	data, err := json.MarshalIndent(s.service, "", "  ")
 	if err != nil {
