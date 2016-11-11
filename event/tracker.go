@@ -1,13 +1,12 @@
-package stats
+package event
 
 import (
 	"log"
 
 	"github.com/fsouza/go-dockerclient"
-	"github.com/netice9/swarm-intelligence/event"
 )
 
-func StartTracking(client *docker.Client) {
+func StartTrackingLocalContainerStats(client *docker.Client) {
 
 	containers, err := client.ListContainers(docker.ListContainersOptions{
 		All: true,
@@ -50,7 +49,7 @@ func trackContainer(id string, client *docker.Client) {
 	}()
 
 	for update := range statsChan {
-		event.ContainerStats.Emit("stats", update)
+		ContainerStats.Emit("stats", update)
 	}
 
 }

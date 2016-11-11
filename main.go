@@ -6,7 +6,6 @@ import (
 
 	"github.com/fsouza/go-dockerclient"
 	"github.com/netice9/swarm-intelligence/event"
-	"github.com/netice9/swarm-intelligence/stats"
 	"github.com/netice9/swarm-intelligence/ui"
 )
 
@@ -22,7 +21,7 @@ func main() {
 		panic(err)
 	}
 	event.StartCollecting(client)
-	stats.StartTracking(client)
+	event.StartTrackingLocalContainerStats(client)
 
 	ui.Run(fmt.Sprintf(":%s", port))
 
