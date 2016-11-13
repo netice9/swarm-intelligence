@@ -53,6 +53,18 @@ func (sa *ServicesAggregator) RemoveServiceListListener(fn func(ServiceList)) {
 	sa.RemoveListener("list", fn)
 }
 
+func (sa *ServicesAggregator) OnServiceInfo(serviceID string, fn func(*ServiceInfo)) {
+	sa.Lock()
+	defer sa.Unlock()
+	info := sa.current[serviceID]
+	go fn(info)
+	sa.AddListener(fmt.Sprintf("update/%s", serviceID), fn)
+}
+
+func (sa *ServicesAggregator) RemoveServiceInfoListener(serviceID string, fn func(*ServiceInfo)) {
+	sa.RemoveListener(fmt.Sprintf("update/%s", serviceID), fn)
+}
+
 func (sa *ServicesAggregator) GetServiceInfo(serviceID string) *ServiceInfo {
 	sa.Lock()
 	defer sa.Unlock()

@@ -54,8 +54,7 @@ var taskItemUI = core.MustParseDisplayModel(`
 `)
 
 func (s *ServiceUI) Mount() {
-	s.render()
-	services.Aggregator.AddListener(fmt.Sprintf("update/%s", s.ID), s.UpdateService)
+	services.Aggregator.OnServiceInfo(s.ID, s.UpdateService)
 }
 
 func (s *ServiceUI) render() {
@@ -96,5 +95,5 @@ func (s *ServiceUI) UpdateService(info *services.ServiceInfo) {
 }
 
 func (s *ServiceUI) Unmount() {
-	services.Aggregator.RemoveListener(fmt.Sprintf("update/%s", s.ID), s.UpdateService)
+	services.Aggregator.RemoveServiceInfoListener(s.ID, s.UpdateService)
 }
