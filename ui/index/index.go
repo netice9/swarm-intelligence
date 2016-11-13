@@ -43,16 +43,13 @@ var nodeListItemUI = core.MustParseDisplayModel(`
 `)
 
 func (i *Index) Mount() {
-	i.services = model.Services.ServiceList()
 	i.nodes = model.SwarmService.Nodes
-	i.render()
-	model.Services.AddListener("list", i.onServiceList)
+	services.Aggregator.OnServiceList(i.onServiceList)
 	model.SwarmService.AddListener("nodes", i.OnNodes)
 }
 
 func (i *Index) render() {
 	m := ui.DeepCopy()
-	// m.SetElementText(id string, text string)
 	for _, s := range i.services {
 		name := s.Name
 		item := serviceListItemUI.DeepCopy()
@@ -86,6 +83,6 @@ func (i *Index) OnUserEvent(evt *core.UserEvent) {
 }
 
 func (i *Index) Unmount() {
-	model.Services.RemoveListener("list", i.onServiceList)
+	services.Aggregator.RemoveServiceListListener(i.onServiceList)
 	model.SwarmService.RemoveListener("nodes", i.OnNodes)
 }

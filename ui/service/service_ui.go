@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/netice9/swarm-intelligence/model"
 	"github.com/netice9/swarm-intelligence/model/services"
 	"github.com/netice9/swarm-intelligence/ui/layout"
 	"gitlab.netice9.com/dragan/go-reactor"
@@ -20,7 +19,7 @@ type ServiceUI struct {
 func ServiceUIFactory(ctx reactor.ScreenContext) reactor.Screen {
 	serviceID := ctx.Params["id"]
 
-	servceInfo := model.Services.GetServiceInfo(serviceID)
+	servceInfo := services.Aggregator.GetServiceInfo(serviceID)
 
 	if servceInfo == nil {
 		return reactor.DefaultNotFoundScreenFactory(ctx)
@@ -56,7 +55,7 @@ var taskItemUI = core.MustParseDisplayModel(`
 
 func (s *ServiceUI) Mount() {
 	s.render()
-	model.Services.AddListener(fmt.Sprintf("update/%s", s.ID), s.UpdateService)
+	services.Aggregator.AddListener(fmt.Sprintf("update/%s", s.ID), s.UpdateService)
 }
 
 func (s *ServiceUI) render() {
@@ -97,5 +96,5 @@ func (s *ServiceUI) UpdateService(info *services.ServiceInfo) {
 }
 
 func (s *ServiceUI) Unmount() {
-	model.Services.RemoveListener(fmt.Sprintf("update/%s", s.ID), s.UpdateService)
+	services.Aggregator.RemoveListener(fmt.Sprintf("update/%s", s.ID), s.UpdateService)
 }

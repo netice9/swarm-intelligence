@@ -25,17 +25,32 @@ type ServicesAggregator struct {
 	serviceList ServiceList
 }
 
-func NewServicesAggregator(ee event.EventEmitter) *ServicesAggregator {
-	return &ServicesAggregator{
-		EventEmitter: ee,
+var Aggregator = NewServicesAggregator()
+
+func NewServicesAggregator() *ServicesAggregator {
+
+	services := &ServicesAggregator{
+		EventEmitter: event.NewEmitterAdapter(),
 		current:      map[string]*ServiceInfo{},
 	}
+	event.Services.AddListener("update", services.OnServices)
+	event.Tasks.AddListener("update", services.OnTasks)
+	event.Time.AddListener("1sec", services.OnTimer)
+
+	return services
+
 }
 
-func (sa *ServicesAggregator) ServiceList() []ServiceStatus {
+func (sa *ServicesAggregator) OnServiceList(fn func(ServiceList)) {
 	sa.Lock()
 	defer sa.Unlock()
-	return sa.serviceList
+	list := sa.serviceList
+	go fn(list)
+	sa.AddListener("list", fn)
+}
+
+func (sa *ServicesAggregator) RemoveServiceListListener(fn func(ServiceList)) {
+	sa.RemoveListener("list", fn)
 }
 
 func (sa *ServicesAggregator) GetServiceInfo(serviceID string) *ServiceInfo {
