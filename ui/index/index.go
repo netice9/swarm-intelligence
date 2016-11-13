@@ -35,7 +35,12 @@ var ui = core.MustParseDisplayModel(`
 `)
 
 var serviceListItemUI = core.MustParseDisplayModel(`
-  <bs.ListGroupItem id="service"/>
+  <bs.ListGroupItem id="service">
+	<div>
+		CPU: <span id="cpu"/>
+		Mem: <span id="memory"/>
+	</div>
+	</bs.ListGroupItem>
 `)
 
 var nodeListItemUI = core.MustParseDisplayModel(`
@@ -53,7 +58,10 @@ func (i *Index) render() {
 	for _, s := range i.services {
 		name := s.Name
 		item := serviceListItemUI.DeepCopy()
-		item.SetElementText("service", name)
+		// item.SetElementText("service", fmt.Sprintf("%s Mem: %d, CPU: %d", name, s.Memory, s.CPU))
+		item.SetElementAttribute("service", "header", name)
+		item.SetElementText("cpu", fmt.Sprintf("%.1f%%", float64(s.CPU)/1e8))
+		item.SetElementText("memory", fmt.Sprintf("%.1f MB", float64(s.CPU)/(1024*1024)))
 		item.SetElementAttribute("service", "href", fmt.Sprintf("#/service/%s", s.ID))
 		m.AppendChild("services", item)
 	}

@@ -104,22 +104,22 @@ func (sa *ServicesAggregator) OnTasks(tasks []swarm.Task) {
 func (sa *ServicesAggregator) OnTimer() {
 	sa.Lock()
 	defer sa.Unlock()
+	defer sa.updateServiceList()
 	for id, s := range sa.current {
 		s.updateStats()
 		sa.Emit(fmt.Sprintf("update/%s", id), s)
 	}
+
 }
 
 func (sa *ServicesAggregator) OnServices(services []swarm.Service) {
 	sa.Lock()
 	defer sa.Unlock()
-
-	newServiceList := ServiceList{}
+	defer sa.updateServiceList()
 
 	newServiceMap := map[string]*ServiceInfo{}
 
 	for _, s := range services {
-		newServiceList = append(newServiceList, ServiceStatus{Name: s.Spec.Name, ID: s.ID})
 
 		if current, found := sa.current[s.ID]; found {
 
@@ -150,11 +150,22 @@ func (sa *ServicesAggregator) OnServices(services []swarm.Service) {
 
 	sa.current = newServiceMap
 
+}
+
+func (sa *ServicesAggregator) updateServiceList() {
+	newServiceList := ServiceList{}
+
+	for _, si := range sa.current {
+		newServiceList = append(newServiceList, si.Status())
+	}
+
 	sort.Sort(newServiceList)
 
 	if !reflect.DeepEqual(sa.serviceList, newServiceList) {
 		sa.serviceList = newServiceList
 		sa.Emit("list", newServiceList)
 	}
+
+	sa.serviceList = newServiceList
 
 }

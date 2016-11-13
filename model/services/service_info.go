@@ -25,10 +25,21 @@ func NewServiceInfo(service swarm.Service) *ServiceInfo {
 func (s *ServiceInfo) updateStats() {
 	cumulative := stats.Entry{}
 	for _, t := range s.Tasks {
-		cumulative = cumulative.Add(stats.Service.LastStats(t.ContainerID))
+		if t.State == "running" {
+			cumulative = cumulative.Add(stats.Service.LastStats(t.ContainerID))
+		}
 	}
 	s.CPU = cumulative.CPU
 	s.Mem = cumulative.Memory
+}
+
+func (s *ServiceInfo) Status() ServiceStatus {
+	return ServiceStatus{
+		Name:   s.Service.Spec.Name,
+		ID:     s.Service.ID,
+		CPU:    s.CPU,
+		Memory: s.Mem,
+	}
 }
 
 func (s *ServiceInfo) UpdateTasks(tasks []swarm.Task) bool {
