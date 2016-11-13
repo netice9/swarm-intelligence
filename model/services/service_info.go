@@ -5,11 +5,14 @@ import (
 	"sort"
 
 	"github.com/docker/docker/api/types/swarm"
+	"github.com/netice9/swarm-intelligence/model/stats"
 )
 
 type ServiceInfo struct {
 	Service swarm.Service
 	Tasks   map[string]TaskInfo
+	Mem     uint64
+	CPU     uint64
 }
 
 func NewServiceInfo(service swarm.Service) *ServiceInfo {
@@ -17,6 +20,15 @@ func NewServiceInfo(service swarm.Service) *ServiceInfo {
 		Service: service,
 		Tasks:   map[string]TaskInfo{},
 	}
+}
+
+func (s *ServiceInfo) updateStats() {
+	cumulative := stats.Entry{}
+	for _, t := range s.Tasks {
+		cumulative = cumulative.Add(stats.Service.LastStats(t.ContainerID))
+	}
+	s.CPU = cumulative.CPU
+	s.Mem = cumulative.Memory
 }
 
 func (s *ServiceInfo) UpdateTasks(tasks []swarm.Task) bool {

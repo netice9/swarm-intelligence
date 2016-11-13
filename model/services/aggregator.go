@@ -64,10 +64,21 @@ func (sa *ServicesAggregator) OnTasks(tasks []swarm.Task) {
 	for id, s := range sa.current {
 		updated := s.UpdateTasks(tasksByService[id])
 		if updated {
+			s.updateStats()
 			sa.Emit(fmt.Sprintf("update/%s", id), s)
 		}
+
 	}
 
+}
+
+func (sa *ServicesAggregator) OnTimer() {
+	sa.Lock()
+	defer sa.Unlock()
+	for id, s := range sa.current {
+		s.updateStats()
+		sa.Emit(fmt.Sprintf("update/%s", id), s)
+	}
 }
 
 func (sa *ServicesAggregator) OnServices(services []swarm.Service) {

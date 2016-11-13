@@ -52,10 +52,9 @@ var taskListItemUI = core.MustParseDisplayModel(`
 
 func (i *Index) Mount() {
 	i.services = model.Services.ServiceList()
-	i.nodes = model.SwarmService.Nodes
 	i.tasks = model.SwarmService.Tasks
 	i.render()
-	model.SwarmService.AddListener("services", i.OnServices)
+	model.Services.AddListener("list", i.onServiceList)
 	model.SwarmService.AddListener("nodes", i.OnNodes)
 	model.SwarmService.AddListener("tasks", i.OnTasks)
 }
@@ -90,7 +89,7 @@ func (i *Index) render() {
 	i.ctx.UpdateScreen(&core.DisplayUpdate{Model: layout.WithLayout(m)})
 }
 
-func (i *Index) OnServices(services services.ServiceList) {
+func (i *Index) onServiceList(services services.ServiceList) {
 	i.services = services
 	i.render()
 }
@@ -109,6 +108,6 @@ func (i *Index) OnUserEvent(evt *core.UserEvent) {
 }
 
 func (i *Index) Unmount() {
-	model.SwarmService.RemoveListener("services", i.OnServices)
+	model.Services.RemoveListener("list", i.onServiceList)
 	model.SwarmService.RemoveListener("nodes", i.OnNodes)
 }

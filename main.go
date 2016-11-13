@@ -22,7 +22,8 @@ func main() {
 	}
 	event.StartCollecting(client)
 	event.StartTrackingLocalContainerStats(client)
-
+	event.StartTimerEvents()
+	event.StartLocalDockerEventsTracking(client)
 	ui.Run(fmt.Sprintf(":%s", port))
 
 }

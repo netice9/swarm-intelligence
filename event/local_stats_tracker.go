@@ -6,6 +6,13 @@ import (
 	"github.com/fsouza/go-dockerclient"
 )
 
+type StatsForContainer struct {
+	Stats       *docker.Stats
+	ContainerID string
+}
+
+var ContainerStats = NewEmitterAdapter()
+
 func StartTrackingLocalContainerStats(client *docker.Client) {
 
 	containers, err := client.ListContainers(docker.ListContainersOptions{
@@ -20,20 +27,11 @@ func StartTrackingLocalContainerStats(client *docker.Client) {
 		}
 	}
 
-	eventsChannel := make(chan *docker.APIEvents)
-
-	err = client.AddEventListener(eventsChannel)
-	if err != nil {
-		panic(err)
-	}
-
-	go func() {
-		for evt := range eventsChannel {
-			if evt.Status == "start" {
-				go trackContainer(evt.ID, client)
-			}
+	DockerEvents.On("event", func(evt *docker.APIEvents) {
+		if evt.Status == "start" {
+			go trackContainer(evt.ID, client)
 		}
-	}()
+	})
 
 }
 
@@ -49,7 +47,7 @@ func trackContainer(id string, client *docker.Client) {
 	}()
 
 	for update := range statsChan {
-		ContainerStats.Emit("stats", update)
+		ContainerStats.Emit("stats", StatsForContainer{Stats: update, ContainerID: id})
 	}
 
 }

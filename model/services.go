@@ -10,4 +10,5 @@ var Services = services.NewServicesAggregator(event.NewEmitterAdapter())
 func init() {
 	event.Services.AddListener("update", Services.OnServices)
 	event.Tasks.AddListener("update", Services.OnTasks)
+	event.Time.AddListener("1sec", Services.OnTimer)
 }

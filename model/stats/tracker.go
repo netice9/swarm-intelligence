@@ -4,8 +4,16 @@ import "time"
 
 type Entry struct {
 	Time   time.Time
-	CPU    float64
-	Memory int64
+	CPU    uint64
+	Memory uint64
+}
+
+func (e Entry) Add(other Entry) Entry {
+	return Entry{
+		other.Time,
+		e.CPU + other.CPU,
+		e.Memory + other.Memory,
+	}
 }
 
 type Tracker struct {
@@ -15,6 +23,13 @@ type Tracker struct {
 
 func NewTracker(duration time.Duration) *Tracker {
 	return &Tracker{duration: duration}
+}
+
+func (t *Tracker) LastEntry() Entry {
+	if len(t.entries) == 0 {
+		return Entry{}
+	}
+	return t.entries[len(t.entries)-1]
 }
 
 func (t *Tracker) Add(entry Entry) {
