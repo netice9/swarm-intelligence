@@ -19,10 +19,17 @@ type ServiceUI struct {
 
 func ServiceUIFactory(ctx reactor.ScreenContext) reactor.Screen {
 	serviceID := ctx.Params["id"]
+
+	servceInfo := model.Services.GetServiceInfo(serviceID)
+
+	if servceInfo == nil {
+		return reactor.DefaultNotFoundScreenFactory(ctx)
+	}
+
 	return &ServiceUI{
 		ctx:     ctx,
 		ID:      serviceID,
-		service: model.Services.GetServiceInfo(serviceID),
+		service: servceInfo,
 	}
 
 }

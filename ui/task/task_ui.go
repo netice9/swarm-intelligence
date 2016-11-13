@@ -21,6 +21,11 @@ type TaskUI struct {
 func TaskUIFactory(ctx reactor.ScreenContext) reactor.Screen {
 	taskID := ctx.Params["id"]
 	task := model.SwarmService.GetTask(taskID)
+
+	if task == nil {
+		return reactor.DefaultNotFoundScreenFactory(ctx)
+	}
+
 	return &TaskUI{
 		ctx:  ctx,
 		ID:   taskID,
