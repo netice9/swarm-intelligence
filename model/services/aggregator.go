@@ -12,8 +12,10 @@ import (
 )
 
 type ServiceStatus struct {
-	Name string
-	ID   string
+	Name   string
+	ID     string
+	CPU    uint64
+	Memory uint64
 }
 
 type ServicesAggregator struct {
