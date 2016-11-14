@@ -54,8 +54,15 @@ var waitingUI = core.MustParseDisplayModel(`
 	<div>Waiting for service update</div>
 `)
 
+var deletedUI = core.MustParseDisplayModel(`
+	<bs.Alert bsStyle="danger">
+		<h4>This service has been removed</h4>
+	</bs.Alert>
+`)
+
 func (s *ServiceUI) Mount() {
 	services.Aggregator.OnServiceInfo(s.ID, s.onServiceUpdate)
+	services.Aggregator.OnServiceDelete(s.ID, s.onServiceDelete)
 }
 
 func (s *ServiceUI) render() {
@@ -63,6 +70,11 @@ func (s *ServiceUI) render() {
 
 	if s.service == nil {
 		s.ctx.UpdateScreen(&core.DisplayUpdate{Model: layout.WithLayout(waitingUI)})
+		return
+	}
+
+	if s.deleted {
+		s.ctx.UpdateScreen(&core.DisplayUpdate{Model: layout.WithLayout(deletedUI)})
 		return
 	}
 
@@ -100,6 +112,12 @@ func (s *ServiceUI) onServiceUpdate(info *services.ServiceInfo) {
 	s.render()
 }
 
+func (s *ServiceUI) onServiceDelete() {
+	s.deleted = true
+	s.render()
+}
+
 func (s *ServiceUI) Unmount() {
+	services.Aggregator.RemoveServiceDeleteListener(s.ID, s.onServiceDelete)
 	services.Aggregator.RemoveServiceInfoListener(s.ID, s.onServiceUpdate)
 }

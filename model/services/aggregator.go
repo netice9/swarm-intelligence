@@ -61,6 +61,14 @@ func (sa *ServicesAggregator) OnServiceInfo(serviceID string, fn func(*ServiceIn
 	sa.AddListener(fmt.Sprintf("update/%s", serviceID), fn)
 }
 
+func (sa *ServicesAggregator) OnServiceDelete(serviceID string, fn func()) {
+	sa.AddListener(fmt.Sprintf("delete/%s", serviceID), fn)
+}
+
+func (sa *ServicesAggregator) RemoveServiceDeleteListener(serviceID string, fn func()) {
+	sa.RemoveListener(fmt.Sprintf("delete/%s", serviceID), fn)
+}
+
 func (sa *ServicesAggregator) RemoveServiceInfoListener(serviceID string, fn func(*ServiceInfo)) {
 	sa.RemoveListener(fmt.Sprintf("update/%s", serviceID), fn)
 }
