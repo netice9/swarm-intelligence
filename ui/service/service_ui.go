@@ -14,16 +14,13 @@ type ServiceUI struct {
 	ctx     reactor.ScreenContext
 	service *services.ServiceInfo
 	ID      string
+	deleted bool
 }
 
 func ServiceUIFactory(ctx reactor.ScreenContext) reactor.Screen {
 	serviceID := ctx.Params["id"]
 
 	servceInfo := services.Aggregator.GetServiceInfo(serviceID)
-
-	if servceInfo == nil {
-		return reactor.DefaultNotFoundScreenFactory(ctx)
-	}
 
 	return &ServiceUI{
 		ctx:     ctx,
@@ -53,12 +50,21 @@ var taskItemUI = core.MustParseDisplayModel(`
 	<bs.ListGroupItem id="item" header="Heading 1">Some body text</bs.ListGroupItem>
 `)
 
+var waitingUI = core.MustParseDisplayModel(`
+	<div>Waiting for service update</div>
+`)
+
 func (s *ServiceUI) Mount() {
-	services.Aggregator.OnServiceInfo(s.ID, s.UpdateService)
+	services.Aggregator.OnServiceInfo(s.ID, s.onServiceUpdate)
 }
 
 func (s *ServiceUI) render() {
 	m := ui.DeepCopy()
+
+	if s.service == nil {
+		s.ctx.UpdateScreen(&core.DisplayUpdate{Model: layout.WithLayout(waitingUI)})
+		return
+	}
 
 	m.SetElementText("serviceName", s.service.Service.Spec.Name)
 	m.SetElementText("serviceID", s.service.Service.ID)
@@ -89,11 +95,11 @@ func (s *ServiceUI) render() {
 func (s *ServiceUI) OnUserEvent(evt *core.UserEvent) {
 }
 
-func (s *ServiceUI) UpdateService(info *services.ServiceInfo) {
+func (s *ServiceUI) onServiceUpdate(info *services.ServiceInfo) {
 	s.service = info
 	s.render()
 }
 
 func (s *ServiceUI) Unmount() {
-	services.Aggregator.RemoveServiceInfoListener(s.ID, s.UpdateService)
+	services.Aggregator.RemoveServiceInfoListener(s.ID, s.onServiceUpdate)
 }

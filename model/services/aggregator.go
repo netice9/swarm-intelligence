@@ -126,7 +126,7 @@ func (sa *ServicesAggregator) OnServices(services []swarm.Service) {
 			if !reflect.DeepEqual(current.Service, s) {
 				// newServiceMap[s.ID] = s
 				current.Service = s
-				sa.Emit(fmt.Sprintf("update/%s", s.ID), s)
+				sa.Emit(fmt.Sprintf("update/%s", s.ID), current)
 			}
 
 			newServiceMap[s.ID] = current
@@ -138,7 +138,7 @@ func (sa *ServicesAggregator) OnServices(services []swarm.Service) {
 
 		newServiceMap[s.ID] = serviceInfo
 
-		sa.Emit(fmt.Sprintf("update/%s", s.ID), s)
+		sa.Emit(fmt.Sprintf("update/%s", s.ID), serviceInfo)
 
 	}
 
