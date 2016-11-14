@@ -6,16 +6,18 @@ import (
 	"reflect"
 	"sort"
 	"sync"
+	"time"
 
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/netice9/swarm-intelligence/event"
 )
 
 type ServiceStatus struct {
-	Name   string
-	ID     string
-	CPU    uint64
-	Memory uint64
+	Name      string
+	ID        string
+	CPU       uint64
+	Memory    uint64
+	CreatedAt time.Time
 }
 
 type ServicesAggregator struct {

@@ -60,7 +60,7 @@ func (i *Index) render() {
 		item := serviceListItemUI.DeepCopy()
 		// item.SetElementText("service", fmt.Sprintf("%s Mem: %d, CPU: %d", name, s.Memory, s.CPU))
 		item.SetElementAttribute("service", "header", name)
-		item.SetElementText("cpu", fmt.Sprintf("%.1f%%", float64(s.CPU)/1e8))
+		item.SetElementText("cpu", fmt.Sprintf("%.1f%%", float64(s.CPU)/1e7))
 		item.SetElementText("memory", fmt.Sprintf("%.1f MB", float64(s.CPU)/(1024*1024)))
 		item.SetElementAttribute("service", "href", fmt.Sprintf("#/service/%s", s.ID))
 		m.AppendChild("services", item)

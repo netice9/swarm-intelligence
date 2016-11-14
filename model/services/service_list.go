@@ -9,10 +9,13 @@ func (sl ServiceList) Len() int {
 // Less reports whether the element with
 // index i should sort before the element with index j.
 func (sl ServiceList) Less(i, j int) bool {
-	if sl[i].Name == sl[j].Name {
-		return sl[i].ID < sl[j].ID
+	if sl[i].CreatedAt == sl[j].CreatedAt {
+		if sl[i].Name == sl[j].Name {
+			return sl[i].ID < sl[j].ID
+		}
+		return sl[i].Name < sl[j].Name
 	}
-	return sl[i].Name < sl[j].Name
+	return sl[i].CreatedAt.Before(sl[j].CreatedAt)
 }
 
 // Swap swaps the elements with indexes i and j.

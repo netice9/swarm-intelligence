@@ -35,10 +35,11 @@ func (s *ServiceInfo) updateStats() {
 
 func (s *ServiceInfo) Status() ServiceStatus {
 	return ServiceStatus{
-		Name:   s.Service.Spec.Name,
-		ID:     s.Service.ID,
-		CPU:    s.CPU,
-		Memory: s.Mem,
+		Name:      s.Service.Spec.Name,
+		ID:        s.Service.ID,
+		CPU:       s.CPU,
+		Memory:    s.Mem,
+		CreatedAt: s.Service.CreatedAt,
 	}
 }
 
