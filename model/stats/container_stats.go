@@ -36,6 +36,16 @@ func (c *ContainerStats) LastStats(containerID string) Entry {
 	return tracker.LastEntry()
 }
 
+func (c *ContainerStats) CurrentStats(containerID string) []Entry {
+	c.Lock()
+	defer c.Unlock()
+	tracker, found := c.trackers[containerID]
+	if !found {
+		return []Entry{}
+	}
+	return tracker.Entries()
+}
+
 func (c *ContainerStats) OnDockerEvent(evt *docker.APIEvents) {
 	c.Lock()
 	defer c.Unlock()
@@ -59,6 +69,7 @@ func (c *ContainerStats) OnStats(stats event.StatsForContainer) {
 	}
 
 	tracker.Add(Entry{
+		Time:   stats.Stats.Read,
 		CPU:    (stats.Stats.CPUStats.CPUUsage.TotalUsage - stats.Stats.PreCPUStats.CPUUsage.TotalUsage),
 		Memory: stats.Stats.MemoryStats.Usage,
 	})
