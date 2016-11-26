@@ -1,0 +1,6 @@
+FROM scratch
+ADD swarm-intelligence /
+WORKDIR /
+ENV PORT=5000
+CMD /swarm-intelligence
+

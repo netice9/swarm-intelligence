@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -93,11 +94,7 @@ func startContainer(containerName, imageName string, cmd []string, links []strin
 	Expect(err).ToNot(HaveOccurred())
 }
 
-var _ = BeforeSuite(func() {
-	var err error
-	docker, err = client.NewEnvClient()
-	Expect(err).ToNot(HaveOccurred())
-
+func createSwarm() {
 	startContainer(
 		"test-registry",
 		"registry:2.5.1",
@@ -156,4 +153,46 @@ var _ = BeforeSuite(func() {
 	})
 	Expect(err).ToNot(HaveOccurred())
 
+}
+
+func pushImage() {
+	wd, err := os.Getwd()
+	Expect(err).ToNot(HaveOccurred())
+	dir := filepath.Dir(wd)
+
+	ctxReader, ctxWriter := io.Pipe()
+
+	go func() {
+		Expect(tarit(dir, ctxWriter)).To(Succeed())
+		Expect(ctxWriter.Close()).To(Succeed())
+	}()
+
+	b, err := docker.ImageBuild(
+		context.Background(),
+		ctxReader,
+		types.ImageBuildOptions{
+			Tags:       []string{"localhost:5000/si/swarm-intelligence:current"},
+			Dockerfile: "Dockerfile.integration",
+		},
+	)
+	Expect(err).ToNot(HaveOccurred())
+	_, err = io.Copy(os.Stdout, b.Body)
+	Expect(err).ToNot(HaveOccurred())
+	Expect(b.Body.Close()).To(Succeed())
+
+	out, err := docker.ImagePush(context.Background(), "localhost:5000/si/swarm-intelligence:current", types.ImagePushOptions{
+		RegistryAuth: "x",
+	})
+	Expect(err).ToNot(HaveOccurred())
+	_, err = io.Copy(os.Stdout, out)
+	Expect(err).ToNot(HaveOccurred())
+	Expect(out.Close()).To(Succeed())
+}
+
+var _ = BeforeSuite(func() {
+	var err error
+	docker, err = client.NewEnvClient()
+	Expect(err).ToNot(HaveOccurred())
+	createSwarm()
+	pushImage()
 })
