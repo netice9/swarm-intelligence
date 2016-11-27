@@ -1,6 +1,6 @@
-FROM scratch
+FROM alpine:3.4
 ADD swarm-intelligence /
 WORKDIR /
 ENV PORT=5000
-CMD /swarm-intelligence
-
+ENTRYPOINT ["/swarm-intelligence"]
+EXPOSE 3000

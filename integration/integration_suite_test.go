@@ -13,6 +13,7 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/client"
@@ -105,29 +106,29 @@ func createSwarm() {
 
 	startContainer(
 		"swarm1",
-		"docker:1.12.3",
+		"docker:1.12.3-dind",
 		[]string{
 			"docker",
 			"daemon",
-			"--insecure-registry=test-registry",
+			"--insecure-registry=test-registry:5000",
 			"-H", "tcp://0.0.0.0:2375",
 			"-H", "unix:///var/run/docker.sock",
-			"--iptables=false",
+			// "--iptables=false",
 		},
 		[]string{"test-registry"},
-		map[int]int{5001: 2375},
+		map[int]int{5001: 2375, 5080: 3000},
 	)
 
 	startContainer(
 		"swarm2",
-		"docker:1.12.3",
+		"docker:1.12.3-dind",
 		[]string{
 			"docker",
 			"daemon",
-			"--insecure-registry=test-registry",
+			"--insecure-registry=test-registry:5000",
 			"-H", "tcp://0.0.0.0:2375",
 			"-H", "unix:///var/run/docker.sock",
-			"--iptables=false",
+			// "--iptables=false",
 		},
 		[]string{"test-registry", "swarm1"},
 		map[int]int{5002: 2375},
@@ -173,6 +174,7 @@ func pushImage() {
 		types.ImageBuildOptions{
 			Tags:       []string{"localhost:5000/si/swarm-intelligence:current"},
 			Dockerfile: "Dockerfile.integration",
+			Squash:     true,
 		},
 	)
 	Expect(err).ToNot(HaveOccurred())
@@ -181,12 +183,67 @@ func pushImage() {
 	Expect(b.Body.Close()).To(Succeed())
 
 	out, err := docker.ImagePush(context.Background(), "localhost:5000/si/swarm-intelligence:current", types.ImagePushOptions{
-		RegistryAuth: "x",
+		RegistryAuth: "-",
 	})
 	Expect(err).ToNot(HaveOccurred())
 	_, err = io.Copy(os.Stdout, out)
 	Expect(err).ToNot(HaveOccurred())
 	Expect(out.Close()).To(Succeed())
+}
+
+func uint64Ptr(val uint64) *uint64 {
+	return &val
+}
+
+func deploySwarmIntelligenceService() {
+	sw1Docker, err := client.NewClient("tcp://localhost:5001", client.DefaultVersion, nil, nil)
+	Expect(err).ToNot(HaveOccurred())
+
+	resp, err := sw1Docker.ServiceCreate(
+
+		context.Background(),
+		swarm.ServiceSpec{
+			Annotations: swarm.Annotations{
+				Name: "swarm-intelligence-head",
+			},
+			Mode: swarm.ServiceMode{
+				Replicated: &swarm.ReplicatedService{
+					Replicas: uint64Ptr(1),
+				},
+			},
+			TaskTemplate: swarm.TaskSpec{
+				ContainerSpec: swarm.ContainerSpec{
+					Image: "test-registry:5000/si/swarm-intelligence:current",
+					Env: []string{
+						"PORT=3000",
+					},
+					Mounts: []mount.Mount{{
+						Type:     "bind",
+						Source:   "/var/run/docker.sock",
+						Target:   "/var/run/docker.sock",
+						ReadOnly: false,
+					},
+					},
+				},
+				Resources: &swarm.ResourceRequirements{},
+				// Placement: &swarm.Placement{},
+			},
+			EndpointSpec: &swarm.EndpointSpec{
+				Ports: []swarm.PortConfig{
+					{
+						Name:          "web",
+						Protocol:      swarm.PortConfigProtocolTCP,
+						TargetPort:    3000,
+						PublishedPort: 3000,
+					},
+				},
+				Mode: swarm.ResolutionModeVIP,
+			},
+		},
+		types.ServiceCreateOptions{},
+	)
+	Expect(err).ToNot(HaveOccurred())
+	log.Println("serviceID", resp.ID)
 }
 
 var _ = BeforeSuite(func() {
@@ -195,4 +252,5 @@ var _ = BeforeSuite(func() {
 	Expect(err).ToNot(HaveOccurred())
 	createSwarm()
 	pushImage()
+	deploySwarmIntelligenceService()
 })
