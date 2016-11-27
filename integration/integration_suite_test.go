@@ -10,6 +10,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/sclevine/agouti"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -21,6 +22,8 @@ import (
 
 	"testing"
 )
+
+var agoutiDriver *agouti.WebDriver
 
 func TestIntegration(t *testing.T) {
 	RegisterFailHandler(Fail)
@@ -253,4 +256,11 @@ var _ = BeforeSuite(func() {
 	createSwarm()
 	pushImage()
 	deploySwarmIntelligenceService()
+
+	agoutiDriver = agouti.PhantomJS()
+	Expect(agoutiDriver.Start()).To(Succeed())
+})
+
+var _ = AfterSuite(func() {
+	Expect(agoutiDriver.Stop()).To(Succeed())
 })
