@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	. "github.com/onsi/ginkgo"
@@ -164,6 +165,11 @@ func pushImage() {
 	wd, err := os.Getwd()
 	Expect(err).ToNot(HaveOccurred())
 	dir := filepath.Dir(wd)
+
+	cmd := exec.Command("go", "build", ".")
+	cmd.Env = append(os.Environ(), "CGO_ENABLED=0", "GOOS=linux")
+	cmd.Dir = dir
+	Expect(cmd.Run()).To(Succeed())
 
 	ctxReader, ctxWriter := io.Pipe()
 
