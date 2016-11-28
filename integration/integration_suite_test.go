@@ -2,6 +2,7 @@ package integration_test
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -181,17 +182,35 @@ func pushImage() {
 		},
 	)
 	Expect(err).ToNot(HaveOccurred())
-	_, err = io.Copy(os.Stdout, b.Body)
-	Expect(err).ToNot(HaveOccurred())
+
+	printDotForJSONObject("build:", b.Body)
+
 	Expect(b.Body.Close()).To(Succeed())
 
 	out, err := docker.ImagePush(context.Background(), "localhost:5000/si/swarm-intelligence:current", types.ImagePushOptions{
 		RegistryAuth: "-",
 	})
 	Expect(err).ToNot(HaveOccurred())
-	_, err = io.Copy(os.Stdout, out)
-	Expect(err).ToNot(HaveOccurred())
+	printDotForJSONObject("push:", out)
+
 	Expect(out.Close()).To(Succeed())
+}
+
+func printDotForJSONObject(prefix string, out io.Reader) {
+	fmt.Print(prefix + " ")
+	decoder := json.NewDecoder(out)
+loop:
+	for {
+		data := map[string]interface{}{}
+		err := decoder.Decode(&data)
+		if err == nil {
+			fmt.Print(".")
+		}
+		if err != nil {
+			fmt.Println()
+			break loop
+		}
+	}
 }
 
 func uint64Ptr(val uint64) *uint64 {
