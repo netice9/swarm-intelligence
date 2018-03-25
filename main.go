@@ -1,29 +1,27 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
-	"github.com/fsouza/go-dockerclient"
-	"github.com/netice9/swarm-intelligence/event"
-	"github.com/netice9/swarm-intelligence/ui"
+	"github.com/netice9/swarm-intelligence/api"
+	"gopkg.in/urfave/cli.v2"
 )
 
 func main() {
-
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "3000"
+	app := &cli.App{
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:  "bind",
+				Value: ":8080",
+			},
+		},
+		Action: func(c *cli.Context) error {
+			return api.Start(c.String("bind"))
+		},
 	}
 
-	client, err := docker.NewClientFromEnv()
+	err := app.Run(os.Args)
 	if err != nil {
 		panic(err)
 	}
-	event.StartCollecting(client)
-	event.StartTrackingLocalContainerStats(client)
-	event.StartTimerEvents()
-	event.StartLocalDockerEventsTracking(client)
-	ui.Run(fmt.Sprintf(":%s", port))
-
 }
