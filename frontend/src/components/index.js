@@ -26,7 +26,8 @@ class Index extends Component {
 
 const mapStateToProps = (state) => {
   return {
-    services: state.services
+    services: state.services,
+    swarmState: state.swarmState
   }
 }
 

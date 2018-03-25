@@ -15,6 +15,7 @@ import (
 type State struct {
 	Time     time.Time       `json:"time"`
 	Services []swarm.Service `json:"services"`
+	Tasks    []swarm.Task    `json:"tasks"`
 }
 
 var currentState atomic.Value
@@ -31,20 +32,25 @@ func init() {
 	if err != nil {
 		panic(fmt.Errorf("Could not intialize docker client: %s", err.Error()))
 	}
-	// currentState := State{
-	// 	Time: time.Now(),
-	// }
 
 	go func() {
 		for {
-			newState := State{
-				Time: time.Now(),
-			}
 			sl, err := c.ServiceList(context.Background(), types.ServiceListOptions{})
 			if err != nil {
 				log.Printf("Error fetching services: %s", err.Error())
 			}
-			newState.Services = sl
+
+			tl, err := c.TaskList(context.Background(), types.TaskListOptions{})
+
+			if err != nil {
+				log.Printf("Error fetching tasks: %s", err.Error())
+			}
+
+			newState := State{
+				Time:     time.Now(),
+				Services: sl,
+				Tasks:    tl,
+			}
 			currentState.Store(newState)
 			time.Sleep(time.Second)
 		}

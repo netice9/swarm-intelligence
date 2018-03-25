@@ -12,7 +12,17 @@ const rootReducer = combineReducers(
     },
     services: (state = [], action) => {
       if (action.type === 'SWARM_STATE_UPDATE') {
-        return action.payload.services.map((service) => service.Spec.Name)
+        const serviceByID = {}
+        action.payload.services.forEach((s) => {
+          serviceByID[s.ID]={name: s.Spec.Name, id: s.ID, tasks: []}
+        })
+
+        action.payload.tasks.forEach((t) => {
+          const s = serviceByID[t.ServiceID] || { tasks: [] }
+          s.tasks.push({id: t.ID, createdAt: t.CreatedAt, state: t.Status.State})
+        })
+
+        return action.payload.services.map((s) => (serviceByID[s.ID]) )
       }
       return state
     }
