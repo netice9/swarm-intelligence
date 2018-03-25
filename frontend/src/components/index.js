@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { fetchStats } from '../actions'
-import moment from 'moment'
+import { Link } from 'react-router-dom'
 
 class Index extends Component {
 
@@ -17,7 +17,7 @@ class Index extends Component {
   render() {
     return (
       <div>
-        Swarm Intelligence
+          <Link to="/deploy_stack">Deploy Or Update a Stack</Link>
       </div>
     )
   }

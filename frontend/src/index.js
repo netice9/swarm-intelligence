@@ -4,6 +4,7 @@ import {BrowserRouter, Switch, Route} from 'react-router-dom'
 import '../style/main.css'
 import '../style/main.scss'
 import Index from './components/index'
+import DeployStack from './components/deploy_stack'
 import NavBar from './components/nav_bar'
 
 import { Provider } from 'react-redux'
@@ -21,6 +22,7 @@ ReactDOM.render(
         <div>
           <NavBar />
           <Route exact path="/" component={Index} />
+          <Route exact path="/deploy_stack" component={DeployStack} />
         </div>
       </BrowserRouter>
     </div>
