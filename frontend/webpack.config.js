@@ -72,7 +72,9 @@ module.exports = {
     contentBase: './build',
     proxy: {
       '/api': {
-        target: 'http://localhost:8088'
+        target: 'http://localhost:8088',
+        ws: true
+
       }
     }
   },

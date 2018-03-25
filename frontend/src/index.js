@@ -6,17 +6,14 @@ import '../style/main.scss'
 import Index from './components/index'
 import DeployStack from './components/deploy_stack'
 import NavBar from './components/nav_bar'
-
 import { Provider } from 'react-redux'
 import { createStore, applyMiddleware } from 'redux'
 import reducers from './reducers'
-import promise from 'redux-promise'
-
-
-const createStoreWithMiddleware = applyMiddleware(promise)(createStore)
+import { swarmStateUpdate } from './actions'
+const store = createStore(reducers)
 
 ReactDOM.render(
-  <Provider store={createStoreWithMiddleware(reducers)}>
+  <Provider store={store}>
     <div>
       <BrowserRouter>
         <div>
@@ -28,4 +25,11 @@ ReactDOM.render(
     </div>
   </Provider>,
   document.getElementById('root')
-);
+)
+
+const protocol = location.protocol === "https:" ? "wss" : "ws"
+var socket = new WebSocket(`${protocol}://${location.host}/api/state`)
+console.log(socket)
+socket.onmessage = (event) => {
+  store.dispatch(swarmStateUpdate(JSON.parse(event.data)))
+}

@@ -4,11 +4,15 @@ import (
 	"bytes"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
+	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
+	"github.com/netice9/swarm-intelligence/core"
 )
 
 func Start(bind string) error {
@@ -51,6 +55,24 @@ func Start(bind string) error {
 			http.Error(w, buf.String(), 500)
 		}
 
+	})
+
+	r.Methods("GET").Path("/api/state").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		upgrader := websocket.Upgrader{}
+		c, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			log.Println(err.Error())
+			return
+		}
+		for {
+			s := core.CurrentState()
+			err = c.WriteJSON(s)
+			if err != nil {
+				return
+			}
+			time.Sleep(2 * time.Second)
+		}
 	})
 
 	return http.ListenAndServe(bind, r)

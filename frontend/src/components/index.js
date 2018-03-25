@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { fetchStats } from '../actions'
 import { Link } from 'react-router-dom'
 
 class Index extends Component {
@@ -18,6 +17,8 @@ class Index extends Component {
     return (
       <div>
           <Link to="/deploy_stack">Deploy Or Update a Stack</Link>
+          <div>Services</div>
+          <pre>{JSON.stringify(this.props.services,null,2)}</pre>
       </div>
     )
   }
@@ -25,9 +26,9 @@ class Index extends Component {
 
 const mapStateToProps = (state) => {
   return {
-    stats: state.stats
+    services: state.services
   }
 }
 
 
-export default connect(mapStateToProps, {fetchStats} )(Index)
+export default connect(mapStateToProps)(Index)
