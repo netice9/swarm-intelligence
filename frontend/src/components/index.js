@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import _ from 'lodash'
+import filesize from 'filesize'
 
 class Index extends Component {
 
@@ -45,7 +46,8 @@ class Index extends Component {
                   (s) =>(
                     <li key={s.id} className={`d-flex justify-content-between align-items-center ${this.serviceListItemClass(s)}`}>
                       {s.name}
-                      <span class="badge badge-info badge-pill">{s.status}</span>
+                      <span className="badge badge-info badge-pill">{s.status}</span>
+                      <p>{filesize(s.memory)}</p>
                     </li>
                   )
                 )

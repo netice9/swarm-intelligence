@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"sync/atomic"
@@ -13,9 +14,11 @@ import (
 )
 
 type State struct {
-	Time     time.Time       `json:"time"`
-	Services []swarm.Service `json:"services"`
-	Tasks    []swarm.Task    `json:"tasks"`
+	Time       time.Time              `json:"time"`
+	Services   []swarm.Service        `json:"services"`
+	Tasks      []swarm.Task           `json:"tasks"`
+	Containers []types.Container      `json:"containers"`
+	Stats      map[string]types.Stats `json:"stats"`
 }
 
 var currentState atomic.Value
@@ -46,10 +49,37 @@ func init() {
 				log.Printf("Error fetching tasks: %s", err.Error())
 			}
 
+			cl, err := c.ContainerList(context.Background(), types.ContainerListOptions{})
+			if err != nil {
+				log.Printf("Error fetching containers: %s", err.Error())
+			}
+
+			stats := map[string]types.Stats{}
+
+			for _, con := range cl {
+				cs, err := c.ContainerStats(context.Background(), con.ID, false)
+				if err != nil {
+					log.Printf("Error fetching containers: %s", err.Error())
+				}
+
+				st := types.Stats{}
+				err = json.NewDecoder(cs.Body).Decode(&st)
+				if err != nil {
+					log.Printf("Error fetching containers: %s", err.Error())
+				}
+				stats[con.ID] = st
+				cs.Body.Close()
+
+			}
+
+			// c.ContainerStats(ctx, containerID, stream)
+
 			newState := State{
-				Time:     time.Now(),
-				Services: sl,
-				Tasks:    tl,
+				Time:       time.Now(),
+				Services:   sl,
+				Tasks:      tl,
+				Containers: cl,
+				Stats:      stats,
 			}
 			currentState.Store(newState)
 			time.Sleep(time.Second)
