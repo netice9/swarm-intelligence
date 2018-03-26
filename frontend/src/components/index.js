@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
+import _ from 'lodash'
 
 class Index extends Component {
 
@@ -13,12 +14,44 @@ class Index extends Component {
       clearInterval(this.intervalID)
     }
   }
+
+  serviceListItemClass(s) {
+    switch(s.status) {
+      case 'running':
+        return 'list-group-item list-group-item-success'
+      case 'ready':
+        return 'list-group-item list-group-item-warning'
+      case 'starting':
+        return 'list-group-item list-group-item-info'
+      case 'complete':
+        return 'list-group-item list-group-item-primary'
+      case 'shutdown':
+        return 'list-group-item list-group-item-dark'
+      default:
+        return 'list-group-item'
+    }
+  }
+
   render() {
     return (
       <div>
-          <Link to="/deploy_stack">Deploy Or Update a Stack</Link>
-          <div>Services</div>
-          <pre>{JSON.stringify(this.props.services,null,2)}</pre>
+        <Link to="/deploy_stack">Deploy Or Update a Stack</Link>
+        <div className="container">
+            <h3>Services</h3>
+            <ul className="list-group list-group-flush">
+              {
+                _.map(
+                   this.props.services,
+                  (s) =>(
+                    <li key={s.id} className={`d-flex justify-content-between align-items-center ${this.serviceListItemClass(s)}`}>
+                      {s.name}
+                      <span class="badge badge-info badge-pill">{s.status}</span>
+                    </li>
+                  )
+                )
+              }
+            </ul>
+        </div>
       </div>
     )
   }

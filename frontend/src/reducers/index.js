@@ -1,5 +1,7 @@
 import { combineReducers } from 'redux'
 import { SWARM_STATE_UPDATE } from '../actions'
+import _ from 'lodash'
+
 const rootReducer = combineReducers(
   {
     swarmState: (state = {}, action) => {
@@ -12,17 +14,21 @@ const rootReducer = combineReducers(
     },
     services: (state = [], action) => {
       if (action.type === 'SWARM_STATE_UPDATE') {
-        const serviceByID = {}
-        action.payload.services.forEach((s) => {
-          serviceByID[s.ID]={name: s.Spec.Name, id: s.ID, tasks: []}
-        })
 
-        action.payload.tasks.forEach((t) => {
-          const s = serviceByID[t.ServiceID] || { tasks: [] }
-          s.tasks.push({id: t.ID, createdAt: t.CreatedAt, state: t.Status.State})
-        })
+        const orderedTasks = _.orderBy(action.payload.tasks, ['CreatedAt'], ['desc'])
 
-        return action.payload.services.map((s) => (serviceByID[s.ID]) )
+        const tasksByServiceID = _.groupBy(orderedTasks, (t) => t.ServiceID)
+
+        const serviceList = _.map(
+          action.payload.services,
+          (s) => ({
+            name: s.Spec.Name, id: s.ID,
+            status: _.map(tasksByServiceID[s.ID], (t)=> t.Status.State)[0],
+            createdAt: s.CreatedAt
+          })
+        )
+
+        return  _.orderBy(serviceList, 'createdAt')
       }
       return state
     }
