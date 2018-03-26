@@ -75,6 +75,15 @@ func Start(bind string) error {
 		}
 	})
 
+	r.Methods("DELETE").Path("/api/services/{serviceID}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		serviceID := mux.Vars(r)["serviceID"]
+		err := core.DeleteService(serviceID)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+	})
+
 	return http.ListenAndServe(bind, r)
 
 }

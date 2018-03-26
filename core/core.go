@@ -27,11 +27,18 @@ func CurrentState() State {
 	return currentState.Load().(State)
 }
 
+func DeleteService(serviceID string) error {
+	return c.ServiceRemove(context.Background(), serviceID)
+}
+
+var c *client.Client
+
 func init() {
 
 	currentState.Store(State{Time: time.Now()})
 
-	c, err := client.NewEnvClient()
+	var err error
+	c, err = client.NewEnvClient()
 	if err != nil {
 		panic(fmt.Errorf("Could not intialize docker client: %s", err.Error()))
 	}

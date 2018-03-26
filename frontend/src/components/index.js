@@ -3,17 +3,47 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import _ from 'lodash'
 import filesize from 'filesize'
+import removeIcon from '../icons/ic_remove_circle_red_18px.svg'
+import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
+import axios from 'axios';
 
 class Index extends Component {
 
-  componentDidMount() {
-    this.props.fetchStats
-    this.intervalID = setInterval(this.props.fetchStats, 1000)
+  constructor(props) {
+    super(props)
+    this.toggleModal = this.toggleModal.bind(this)
+    this.deleteService = this.deleteService.bind(this)
   }
-  componentWillUnmount() {
-    if (this.intervalID) {
-      clearInterval(this.intervalID)
-    }
+
+  state = {
+    selectedService: null,
+    modal: null,
+  }
+
+  deleteService(id, name) {
+    axios.delete(`/api/services/${id}`)
+      .then((response) => {
+        this.setState({
+          modal: {
+            title: 'Success',
+            text: `Service ${name} deleted!`,
+            confirmText: 'Ok',
+            showCancel: false,
+            confirmAction: this.toggleModal
+          }
+        })
+      })
+      .catch( (error) => {
+        this.setState({
+          modal: {
+            title: 'Failed',
+            text: `Could not delete service ${name}: ${error.response.data}`,
+            confirmText: 'Ok',
+            showCancel: false,
+            confirmAction: this.toggleModal
+          }
+        })
+      })
   }
 
   serviceListItemClass(s) {
@@ -33,27 +63,75 @@ class Index extends Component {
     }
   }
 
+  toggleModal() {
+    this.setState({modal: null})
+  }
+
   render() {
+
+    const { modal } = this.state
+
     return (
       <div>
         <Link to="/deploy_stack">Deploy Or Update a Stack</Link>
+        <div>
+          {
+            this.state.modal ?
+              <Modal isOpen={true} toggle={this.toggleModal}>
+                <ModalHeader toggle={this.toggleModal}>{modal.title}</ModalHeader>
+                <ModalBody>
+                  { modal.text }
+                </ModalBody>
+                <ModalFooter>
+                  <Button color="warning" onClick={modal.confirmAction}>{modal.confirmText}</Button>{' '}
+                  { modal.showCancel ? <Button color="secondary" onClick={this.toggleModal}>Cancel</Button> : null }
+                </ModalFooter>
+              </Modal>
+              :
+              null
+        }
+        </div>
         <div className="container">
             <h3>Services</h3>
-            <ul className="list-group list-group-flush">
-              {
-                _.map(
-                   this.props.services,
-                  (s) =>(
-                    <li key={s.id} className={`d-flex justify-content-between align-items-center ${this.serviceListItemClass(s)}`}>
-                      {s.name}
-                      <span className="badge badge-info badge-pill">{s.status}</span>
-                      <p>{filesize(s.memory || 0)}</p>
-                      <p>{s.cpu * 100}%</p>
-                    </li>
+            <table className="table table-striped table-hover">
+              <thead className="thead">
+                <tr>
+                  <th>Name</th>
+                  <th>Status</th>
+                  <th style={ {textAlign: 'right'} } >Memory Usage</th>
+                  <th style={ {textAlign: 'right'} } >CPU Usage</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {
+                  _.map(
+                     this.props.services,
+                    (s) =>(
+                      <tr key={s.id}>
+                        <td>{s.name}</td>
+                        <td><span className="badge badge-info badge-pill">{s.status}</span></td>
+                        <td style={ {textAlign: 'right'} } >{filesize(s.memory || 0)}</td>
+                        <td style={ {textAlign: 'right'} } >{(s.cpu * 100).toFixed(2)}</td>
+                        <td>
+                          <img src={removeIcon} onClick={() =>{
+                            this.setState({
+                              modal: {
+                                title: 'Delete Service Confirmation',
+                                text: `Do you really want to delete service ${s.name}?`,
+                                confirmText: 'Delete!',
+                                showCancel: true,
+                                confirmAction: () => this.deleteService(s.id, s.name)
+                              }
+                            }
+                        )} } />
+                        </td>
+                      </tr>
+                    )
                   )
-                )
-              }
-            </ul>
+                }
+              </tbody>
+          </table>
         </div>
       </div>
     )
