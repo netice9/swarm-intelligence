@@ -47,7 +47,8 @@ class Index extends Component {
                     <li key={s.id} className={`d-flex justify-content-between align-items-center ${this.serviceListItemClass(s)}`}>
                       {s.name}
                       <span className="badge badge-info badge-pill">{s.status}</span>
-                      <p>{filesize(s.memory)}</p>
+                      <p>{filesize(s.memory || 0)}</p>
+                      <p>{s.cpu * 100}%</p>
                     </li>
                   )
                 )
