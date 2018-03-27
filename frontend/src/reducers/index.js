@@ -1,11 +1,21 @@
 import { combineReducers } from 'redux'
-import { SWARM_STATE_UPDATE } from '../actions'
+import { SWARM_STATE_UPDATE, WEBSOCKET_CONNECTED, WEBSOCKET_DISCONNECTED } from '../actions'
 import _ from 'lodash'
 import moment from 'moment'
 
 
 const rootReducer = combineReducers(
   {
+    websocketConnected: (state = false, action) => {
+      switch( action.type ) {
+        case WEBSOCKET_CONNECTED:
+          return true
+        case WEBSOCKET_DISCONNECTED:
+          return false
+        default:
+        return state
+      }
+    },
     swarmState: (state = {}, action) => {
       if (action.type === 'SWARM_STATE_UPDATE') {
         return {
