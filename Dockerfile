@@ -18,5 +18,5 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /go/bin/swarm-int
 
 FROM alpine:3.6
 COPY --from=go-builder /go/bin/swarm-intelligence /
-CMD ['/swarm-intelligence']
+CMD ["/swarm-intelligence"]
 EXPOSE 8080
