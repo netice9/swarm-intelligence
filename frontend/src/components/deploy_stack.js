@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { post } from 'axios';
+import Loadable from 'react-loading-overlay'
 
 export default class DeployStack extends Component {
 
@@ -7,6 +8,7 @@ export default class DeployStack extends Component {
     file: null,
     name: "",
     alert: null,
+    loadingText: null
   }
 
   canSubmit() {
@@ -22,13 +24,19 @@ export default class DeployStack extends Component {
   }
 
   submit = (evt) => {
+
+    this.setState({loadingText: `Deploying stack ${this.state.name}`})
+
     evt.preventDefault()
     this.fileUpload().then(() => {
+      this.setState({loadingText: null})
       this.props.history.push("/")
     }).catch((err) => {
-      // console.log("catch!")
+      this.setState({loadingText: null})
       if (err.response) {
         this.setState({alert: err.response.data})
+      } else {
+        this.setState({alert: 'Failed to deploy'})
       }
     })
   }
@@ -46,7 +54,11 @@ export default class DeployStack extends Component {
 
   render() {
     return (
-      <div>
+      <Loadable
+        spinner
+        text={this.state.loadingText}
+        active={!!this.state.loadingText}
+      >
       {this.state.alert ? <div class="alert alert-danger" role="alert">{this.state.alert}</div> : null}
 
         <div className="container">
@@ -63,7 +75,7 @@ export default class DeployStack extends Component {
            <button type="submit" className="btn btn-primary" disabled={!this.canSubmit()}>Submit</button>
          </form>
         </div>
-      </div>
+      </Loadable>
     )
   }
 }

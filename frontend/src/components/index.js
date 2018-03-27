@@ -6,6 +6,7 @@ import filesize from 'filesize'
 import removeIcon from '../icons/ic_remove_circle_red_18px.svg'
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 import axios from 'axios';
+import Loadable from 'react-loading-overlay'
 
 class Index extends Component {
 
@@ -18,12 +19,15 @@ class Index extends Component {
   state = {
     selectedService: null,
     modal: null,
+    loadingText: null
   }
 
   deleteService(id, name) {
+    this.setState({loadingText: 'Deleting', modal: null})
     axios.delete(`/api/services/${id}`)
       .then((response) => {
         this.setState({
+          loadingText: null,
           modal: {
             title: 'Success',
             text: `Service ${name} deleted!`,
@@ -35,6 +39,7 @@ class Index extends Component {
       })
       .catch( (error) => {
         this.setState({
+          loadingText: null,
           modal: {
             title: 'Failed',
             text: `Could not delete service ${name}: ${error.response.data}`,
@@ -72,7 +77,11 @@ class Index extends Component {
     const { modal } = this.state
 
     return (
-      <div>
+      <Loadable
+        spinner
+        active={!!this.state.loadingText}
+        text={this.state.loadingText}
+      >
         <Link to="/deploy_stack">Deploy Or Update a Stack</Link>
         <div>
           {
@@ -133,7 +142,7 @@ class Index extends Component {
               </tbody>
           </table>
         </div>
-      </div>
+      </Loadable>
     )
   }
 }
