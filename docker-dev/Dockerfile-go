@@ -1,0 +1,6 @@
+FROM golang:1.10.0
+RUN go get github.com/cespare/reflex
+RUN mkdir -p /go/src/github.com/netice9/swarm-intelligence
+WORKDIR /go/src/github.com/netice9/swarm-intelligence
+CMD reflex -R ^frontend/ -s -- go run main.go --bind :8080
+EXPOSE 8080
