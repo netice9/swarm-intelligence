@@ -108,7 +108,7 @@ class Index extends Component {
                   <th>Name</th>
                   <th>Status</th>
                   <th style={ {textAlign: 'right'} } >Memory Usage</th>
-                  <th style={ {textAlign: 'right'} } >CPU Usage</th>
+                  <th style={ {textAlign: 'right'} } >% CPU Usage</th>
                   <th>Actions</th>
                 </tr>
               </thead>

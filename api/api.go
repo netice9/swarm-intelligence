@@ -12,6 +12,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
+	auth "github.com/nabeken/negroni-auth"
 	"github.com/netice9/swarm-intelligence/core"
 	"github.com/netice9/swarm-intelligence/frontend"
 	"github.com/urfave/negroni"
@@ -86,7 +87,13 @@ func Start(bind string) error {
 		}
 	})
 
-	n := negroni.New(negroni.NewStatic(frontend.AssetFS()))
+	n := negroni.New()
+	authUsername := os.Getenv("AUTH_USERNAME")
+	authPassword := os.Getenv("AUTH_PASSWORD")
+	if authUsername != "" && authPassword != "" {
+		auth.Basic(authUsername, authPassword)
+	}
+	n.Use(negroni.NewStatic(frontend.AssetFS()))
 	n.UseHandler(r)
 	return http.ListenAndServe(bind, n)
 

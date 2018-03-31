@@ -185,6 +185,18 @@
 			"revisionTime": "2018-03-06T18:15:48Z"
 		},
 		{
+			"checksumSHA1": "ylIW06wZJ8IPaVgxM6y6yGFbt1c=",
+			"path": "github.com/nabeken/negroni-auth",
+			"revision": "c65ff4ad85ca820b3a014f3b20356b1bd62ff9dc",
+			"revisionTime": "2017-04-21T07:46:00Z"
+		},
+		{
+			"checksumSHA1": "2U+zvf78EIf8q8SgiW3bebiXONQ=",
+			"path": "github.com/nabeken/negroni-auth/datastore",
+			"revision": "c65ff4ad85ca820b3a014f3b20356b1bd62ff9dc",
+			"revisionTime": "2017-04-21T07:46:00Z"
+		},
+		{
 			"checksumSHA1": "OUupkCHnh8e3RHRNcMFqQJqhaQI=",
 			"origin": "github.com/docker/docker/vendor/github.com/opencontainers/go-digest",
 			"path": "github.com/opencontainers/go-digest",
@@ -206,6 +218,12 @@
 			"revisionTime": "2018-03-23T18:57:24Z"
 		},
 		{
+			"checksumSHA1": "JVGDxPn66bpe6xEiexs1r+y6jF0=",
+			"path": "github.com/patrickmn/go-cache",
+			"revision": "a3647f8e31d79543b2d0f0ae2fe5c379d72cedc0",
+			"revisionTime": "2017-07-22T04:01:10Z"
+		},
+		{
 			"checksumSHA1": "PdQm3s8DoVJ17Vk8n7o5iPa7PK0=",
 			"origin": "github.com/docker/docker/vendor/github.com/pkg/errors",
 			"path": "github.com/pkg/errors",
@@ -217,6 +235,18 @@
 			"path": "github.com/urfave/negroni",
 			"revision": "22c5532ea862c34fdad414e90f8cc00b4f6f4cab",
 			"revisionTime": "2018-01-30T04:45:49Z"
+		},
+		{
+			"checksumSHA1": "vE43s37+4CJ2CDU6TlOUOYE0K9c=",
+			"path": "golang.org/x/crypto/bcrypt",
+			"revision": "cb497ae8f18e3c55f81bc9f3876c8f4c3d8a2813",
+			"revisionTime": "2017-01-04T23:06:24Z"
+		},
+		{
+			"checksumSHA1": "JsJdKXhz87gWenMwBeejTOeNE7k=",
+			"path": "golang.org/x/crypto/blowfish",
+			"revision": "cb497ae8f18e3c55f81bc9f3876c8f4c3d8a2813",
+			"revisionTime": "2017-01-04T23:06:24Z"
 		},
 		{
 			"checksumSHA1": "Y+HGqEkYM15ir+J93MEaHdyFy0c=",
