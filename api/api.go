@@ -91,7 +91,7 @@ func Start(bind string) error {
 	authUsername := os.Getenv("AUTH_USERNAME")
 	authPassword := os.Getenv("AUTH_PASSWORD")
 	if authUsername != "" && authPassword != "" {
-		auth.Basic(authUsername, authPassword)
+		n.Use(auth.Basic(authUsername, authPassword))
 	}
 	n.Use(negroni.NewStatic(frontend.AssetFS()))
 	n.UseHandler(r)
