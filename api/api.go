@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 	"io/ioutil"
 	"log"
@@ -48,6 +49,34 @@ func Start(bind string) error {
 
 		cmd := exec.Command("docker", "stack", "deploy", "-c", tf.Name(), "--prune", "--with-registry-auth", r.FormValue("name"))
 		buf := &bytes.Buffer{}
+		cmd.Stdout = buf
+		cmd.Stderr = buf
+		err = cmd.Run()
+
+		cmd.StdoutPipe()
+
+		if err != nil {
+			http.Error(w, buf.String(), 500)
+		}
+
+	})
+
+	r.Methods("POST").Path("/api/add_credentials").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		loginData := struct {
+			Username string `json:"username"`
+			Password string `json:"password"`
+			Registry string `json:"registry"`
+		}{}
+
+		err := json.NewDecoder(r.Body).Decode(&loginData)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+		}
+
+		cmd := exec.Command("docker", "login", loginData.Registry, "-u", loginData.Username, "-p", loginData.Password)
+		buf := &bytes.Buffer{}
+
 		cmd.Stdout = buf
 		cmd.Stderr = buf
 		err = cmd.Run()

@@ -51,23 +51,6 @@ class Index extends Component {
       })
   }
 
-  serviceListItemClass(s) {
-    switch(s.status) {
-      case 'running':
-        return 'list-group-item list-group-item-success'
-      case 'ready':
-        return 'list-group-item list-group-item-warning'
-      case 'starting':
-        return 'list-group-item list-group-item-info'
-      case 'complete':
-        return 'list-group-item list-group-item-primary'
-      case 'shutdown':
-        return 'list-group-item list-group-item-dark'
-      default:
-        return 'list-group-item'
-    }
-  }
-
   toggleModal() {
     this.setState({modal: null})
   }
@@ -83,6 +66,7 @@ class Index extends Component {
         text={this.state.loadingText}
       >
         <Link to="/deploy_stack">Deploy Or Update a Stack</Link>
+        <Link to="/manage_credentials">Manage Credentials</Link>
         <div>
           {
             this.state.modal ?
