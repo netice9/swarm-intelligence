@@ -16,8 +16,10 @@ COPY --from=frontend-builder /frontend/build frontend/build
 RUN go generate ./frontend
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /go/bin/swarm-intelligence .
 
-FROM alpine:3.6
-RUN apk update && apk add docker
+FROM docker:18.03.0-ce AS docker
+
+FROM alpine:3.7
 COPY --from=go-builder /go/bin/swarm-intelligence /
+COPY --from=docker /usr/local/bin/docker /usr/bin/docker
 CMD ["/swarm-intelligence"]
 EXPOSE 8080
