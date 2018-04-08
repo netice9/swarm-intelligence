@@ -1,6 +1,7 @@
 package aggregator
 
 import (
+	"log"
 	"sync"
 	"time"
 
@@ -31,6 +32,7 @@ func init() {
 			}
 
 			for _, r := range stale {
+				log.Println("deleting", r)
 				delete(agentStates, r)
 			}
 
