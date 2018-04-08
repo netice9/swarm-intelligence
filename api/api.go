@@ -14,12 +14,15 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	auth "github.com/nabeken/negroni-auth"
+	"github.com/netice9/swarm-intelligence/aggregator"
 	"github.com/netice9/swarm-intelligence/core"
 	"github.com/netice9/swarm-intelligence/frontend"
 	"github.com/urfave/negroni"
 )
 
-func Start(bind string) error {
+func Start(bind, aggregatorBind string) error {
+
+	go listenForAggregator(aggregatorBind)
 
 	r := mux.NewRouter()
 	r.Methods("POST").Path("/api/deploy_stack").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -98,7 +101,7 @@ func Start(bind string) error {
 			return
 		}
 		for {
-			s := core.CurrentState()
+			s := aggregator.State()
 			err = c.WriteJSON(s)
 			if err != nil {
 				return

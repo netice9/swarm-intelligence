@@ -27,10 +27,27 @@ services:
       DOCKER_HOST: tcp://swarm:2375
     depends_on:
       - swarm-init
+      - swarm
+
+  agent-dev:
+    volumes:
+      - ".:/go/src/github.com/netice9/swarm-intelligence"
+    build:
+      context: 'docker-dev'
+      dockerfile: 'Dockerfile-go'
+    environment:
+      DOCKER_HOST: tcp://swarm:2375
+    depends_on:
+      - swarm-init
+      - swarm
+    command: ["reflex", "-R", "^frontend/", "-s", "--", "go", "run", "main.go", "agent", "--remote", "http://api-dev:9000"]
+
 
   swarm-init:
     image: 'docker:18.03.0-ce'
     command: ['sh', '-c', 'sleep 5 && docker swarm init']
+    environment:
+      DOCKER_HOST: tcp://swarm:2375
     depends_on:
       - swarm
   swarm:
