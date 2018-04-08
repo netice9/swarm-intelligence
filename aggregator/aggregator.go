@@ -26,7 +26,7 @@ func init() {
 			stale := []string{}
 			n := time.Now()
 			for r, s := range agentStates {
-				if n.Sub(s.Time) > 10*time.Second {
+				if n.Sub(s.Time) > 30*time.Second {
 					stale = append(stale, r)
 				}
 			}
