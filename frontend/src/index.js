@@ -10,6 +10,7 @@ import { swarmStateUpdate, websocketConnected, websocketDisconnected } from './a
 import WebsocketSpinner from './components/websocket_spinner'
 
 import Namespaces from './components/namespaces'
+import Services from './components/services'
 import DeployStack from './components/deploy_stack'
 import NavBar from './components/nav_bar'
 import ManageCredentials from './components/manage_credentials'
@@ -25,6 +26,7 @@ ReactDOM.render(
           <Route exact path="/" component={Namespaces} />
           <Route exact path="/deploy_stack" component={DeployStack} />
           <Route exact path="/manage_credentials" component={ManageCredentials} />
+          <Route exact path="/namespaces/:namespace" component={Services} />
         </div>
       </BrowserRouter>
     </WebsocketSpinner>
