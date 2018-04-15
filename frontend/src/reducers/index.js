@@ -78,11 +78,23 @@ const rootReducer = combineReducers(
             status: _.map(tasksByServiceID[s.ID], (t)=> t.Status.State)[0],
             createdAt: s.CreatedAt,
             memory: _.sum(_.map((containersByServiceID[s.ID] || []),(c) => c.stats.memory_stats.usage)),
-            cpu: cpuUsage(s.ID)
+            cpu: cpuUsage(s.ID),
+            namespace: s.Spec.Labels['com.docker.stack.namespace'] || 'default'
           })
         )
 
-        return  _.orderBy(serviceList, 'createdAt')
+        const byNamespace = _.groupBy(serviceList, 'namespace')
+
+        const groups = _.map(byNamespace, (services, ns) => ({
+          namespace: ns,
+          services: services,
+          cpu: _.sumBy(services,'cpu'),
+          memory: _.sumBy(services, 'memory'),
+          createdAt: _.minBy(services, 'createdAt')
+        }))
+
+
+        return  _.sortBy(groups, 'createdAt')
       }
       return state
     }

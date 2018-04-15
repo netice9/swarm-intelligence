@@ -84,48 +84,53 @@ class Index extends Component {
               null
         }
         </div>
-        <div className="container">
-            <h3>Services</h3>
-            <table className="table table-striped table-hover">
-              <thead className="thead">
-                <tr>
-                  <th>Name</th>
-                  <th>Status</th>
-                  <th style={ {textAlign: 'right'} } >Memory Usage</th>
-                  <th style={ {textAlign: 'right'} } >% CPU Usage</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {
-                  _.map(
-                     this.props.services,
-                    (s) =>(
-                      <tr key={s.id}>
-                        <td>{s.name}</td>
-                        <td><span className="badge badge-info badge-pill">{s.status}</span></td>
-                        <td style={ {textAlign: 'right'} } >{filesize(s.memory || 0)}</td>
-                        <td style={ {textAlign: 'right'} } >{(s.cpu * 100).toFixed(2)}</td>
-                        <td>
-                          <img src={removeIcon} onClick={() =>{
-                            this.setState({
-                              modal: {
-                                title: 'Delete Service Confirmation',
-                                text: `Do you really want to delete service ${s.name}?`,
-                                confirmText: 'Delete!',
-                                showCancel: true,
-                                confirmAction: () => this.deleteService(s.id, s.name)
-                              }
-                            }
-                        )} } />
-                        </td>
-                      </tr>
-                    )
-                  )
-                }
-              </tbody>
-          </table>
-        </div>
+        {
+          _.map(this.props.services, (g) => (
+            <div className="container" key={g.namespace}>
+                <h3>Namespace: {g.namespace}</h3>
+                <table className="table table-striped table-hover">
+                  <thead className="thead">
+                    <tr>
+                      <th>Name</th>
+                      <th>Status</th>
+                      <th style={ {textAlign: 'right'} } >Memory Usage</th>
+                      <th style={ {textAlign: 'right'} } >% CPU Usage</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {
+                      _.map(
+                         g.services,
+                        (s) =>(
+                          <tr key={g.namespace + s.id}>
+                            <td>{s.name}</td>
+                            <td><span className="badge badge-info badge-pill">{s.status}</span></td>
+                            <td style={ {textAlign: 'right'} } >{filesize(s.memory || 0)}</td>
+                            <td style={ {textAlign: 'right'} } >{(s.cpu * 100).toFixed(2)}</td>
+                            <td>
+                              <img src={removeIcon} onClick={() =>{
+                                this.setState({
+                                  modal: {
+                                    title: 'Delete Service Confirmation',
+                                    text: `Do you really want to delete service ${s.name}?`,
+                                    confirmText: 'Delete!',
+                                    showCancel: true,
+                                    confirmAction: () => this.deleteService(s.id, s.name)
+                                  }
+                                }
+                            )} } />
+                            </td>
+                          </tr>
+                        )
+                      )
+                    }
+                  </tbody>
+              </table>
+            </div>
+          ))
+        }
+
       </Loadable>
     )
   }
