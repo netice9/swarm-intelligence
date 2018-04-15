@@ -9,7 +9,7 @@ import reducers from './reducers'
 import { swarmStateUpdate, websocketConnected, websocketDisconnected } from './actions'
 import WebsocketSpinner from './components/websocket_spinner'
 
-import Index from './components/index'
+import Namespaces from './components/namespaces'
 import DeployStack from './components/deploy_stack'
 import NavBar from './components/nav_bar'
 import ManageCredentials from './components/manage_credentials'
@@ -22,7 +22,7 @@ ReactDOM.render(
       <BrowserRouter>
         <div>
           <NavBar />
-          <Route exact path="/" component={Index} />
+          <Route exact path="/" component={Namespaces} />
           <Route exact path="/deploy_stack" component={DeployStack} />
           <Route exact path="/manage_credentials" component={ManageCredentials} />
         </div>

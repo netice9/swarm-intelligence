@@ -12,7 +12,9 @@ class NavBar extends Component {
         </button>
 
         <div className="collapse navbar-collapse" id="navbarSupportedContent">
-        </div>
+          <Link className="nav-link" to="/deploy_stack">Deploy Or Update a Stack</Link>
+          <Link className="nav-link" to="/manage_credentials">Manage Credentials</Link>
+      </div>
 
       </nav>
     )

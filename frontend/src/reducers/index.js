@@ -24,7 +24,7 @@ const rootReducer = combineReducers(
       }
       return state
     },
-    services: (state = [], action) => {
+    swarm: (state = [], action) => {
       if (action.type === 'SWARM_STATE_UPDATE') {
 
         const orderedTasks = _.orderBy(action.payload.tasks, ['CreatedAt'], ['desc'])
@@ -85,16 +85,20 @@ const rootReducer = combineReducers(
 
         const byNamespace = _.groupBy(serviceList, 'namespace')
 
-        const groups = _.map(byNamespace, (services, ns) => ({
+        const namespaces = _.map(byNamespace, (services, ns) => ({
           namespace: ns,
-          services: services,
           cpu: _.sumBy(services,'cpu'),
           memory: _.sumBy(services, 'memory'),
           createdAt: _.minBy(services, 'createdAt')
         }))
 
 
-        return  _.sortBy(groups, 'createdAt')
+        return  {
+          cpu: _.sumBy(namespaces, 'cpu'),
+          memory: _.sumBy(namespaces, 'memory'),
+          namespaces: _.sortBy(namespaces, 'createdAt'),
+          servicesByNamespace: byNamespace
+        }
       }
       return state
     }
