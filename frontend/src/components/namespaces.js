@@ -23,8 +23,8 @@ class Index extends Component {
 
     const cpuData = _.map(this.props.swarm.namespaces,(ns) => [ns.namespace,ns.cpu*100])
 
-    const cpuHistory = this.props.swarm.cpuHistory || [[new Date(0),0]]
-    const memoryHistory = this.props.swarm.memoryHistory || [[new Date(0),0]]
+    const cpuHistory = this.props.swarm.cpuHistory || []
+    const memoryHistory = this.props.swarm.memoryHistory || []
 
     return (
       <div>
@@ -63,8 +63,15 @@ class Index extends Component {
                   ['Namespace', 'Bytes Used'],
                   ...memoryData
                 ]}
-                options={ {title: "Memory Usage"} }
-                pieHole={0.4}
+                options={
+                  {
+                    title: "Memory Usage",
+                    legend: {
+                      position: 'bottom'
+                    }
+                  }
+                }
+
                 width="100%"
                 graph_id="MemoryChart"
               />
@@ -77,7 +84,14 @@ class Index extends Component {
                   ['Namespace', '%CPU'],
                   ...cpuData
                 ]}
-                options={ {title: "CPU Usage"} }
+                options={
+                  {
+                    title: "CPU Usage",
+                    legend: {
+                      position: 'bottom'
+                    }
+                  }
+                }
                 width="100%"
                 pieHole={0.4}
                 graph_id="CPUChart"
@@ -106,6 +120,7 @@ class Index extends Component {
                     hAxis: {
                        format: "HH:mm:ss",
                        title: 'Time',
+                       slantedText: true
                     },
                     vAxis: {
                       baseline: 0
