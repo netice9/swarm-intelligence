@@ -4,6 +4,8 @@ import _ from 'lodash'
 import moment from 'moment'
 
 
+const MAX_HISTORY_SIZE=60
+
 const rootReducer = combineReducers(
   {
     websocketConnected: (state = false, action) => {
@@ -24,7 +26,7 @@ const rootReducer = combineReducers(
       }
       return state
     },
-    swarm: (state = [], action) => {
+    swarm: (oldState = {}, action) => {
       if (action.type === 'SWARM_STATE_UPDATE') {
 
         const orderedTasks = _.orderBy(action.payload.tasks, ['CreatedAt'], ['desc'])
@@ -93,14 +95,32 @@ const rootReducer = combineReducers(
         }))
 
 
-        return  {
-          cpu: _.sumBy(namespaces, 'cpu'),
-          memory: _.sumBy(namespaces, 'memory'),
+        const cpu = _.sumBy(namespaces, 'cpu')
+        let cpuHistory = [...(oldState.cpuHistory || []), [new Date(Date.parse(action.payload.time)),cpu*100]]
+
+        while (cpuHistory.length > MAX_HISTORY_SIZE) {
+          cpuHistory = [...cpuHistory].slice(1)
+        }
+
+        const memory = _.sumBy(namespaces, 'memory')
+        let memoryHistory = [...(oldState.memoryHistory || []), [new Date(Date.parse(action.payload.time)),memory/(1024*1024)]]
+
+        while (memoryHistory.length > MAX_HISTORY_SIZE) {
+          memoryHistory = [...memoryHistory].slice(1)
+        }
+
+        const state = {
+          cpuHistory,
+          memoryHistory,
+          cpu: cpu,
+          memory: memory,
           namespaces: _.sortBy(namespaces, 'createdAt'),
           servicesByNamespace: byNamespace
         }
+
+        return state
       }
-      return state
+      return oldState
     }
   }
 )

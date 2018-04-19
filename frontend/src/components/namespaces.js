@@ -23,10 +23,12 @@ class Index extends Component {
 
     const cpuData = _.map(this.props.swarm.namespaces,(ns) => [ns.namespace,ns.cpu*100])
 
+    const cpuHistory = this.props.swarm.cpuHistory || [new Date(0),0]
+    const memoryHistory = this.props.swarm.memoryHistory || [new Date(0),0]
 
     return (
       <div>
-        <div className="container">
+        <div className="container-fluid">
           <div className="row">
             <div className="col">
               <h3>Namespaces</h3>
@@ -79,6 +81,71 @@ class Index extends Component {
                 width="100%"
                 pieHole={0.4}
                 graph_id="CPUChart"
+              />
+            </div>
+          </div>
+          <div className="row">
+            <div className="col">
+              <Chart
+                chartType="LineChart"
+                columns={[
+                  {
+                    label: 'time',
+                    type: 'datetime'
+                  },
+                  {
+                    label: 'cpu (%)',
+                    type: 'number'
+                  },
+
+                ]}
+                rows={cpuHistory}
+                options={
+                  {
+                    title: "CPU History",
+                    hAxis: {
+                       format: "HH:mm:ss",
+                       title: 'Time',
+                    },
+                    vAxis: {
+                      baseline: 0
+                    }
+                  }
+                }
+                width="100%"
+                graph_id="CPUHistoryChart"
+              />
+            </div>
+            <div className="col">
+              <Chart
+                chartType="LineChart"
+                columns={[
+                  {
+                    label: 'time',
+                    type: 'datetime'
+                  },
+                  {
+                    label: 'memory (Mbytes)',
+                    type: 'number'
+                  },
+
+                ]}
+                rows={memoryHistory}
+                options={
+                  {
+                    title: "Memory History",
+                    hAxis: {
+                       format: "HH:mm:ss",
+                       title: 'Time',
+                       slantedText: true
+                    },
+                    vAxis: {
+                      baseline: 0
+                    }
+                  }
+                }
+                width="100%"
+                graph_id="MemoryHistoryChart"
               />
             </div>
           </div>
