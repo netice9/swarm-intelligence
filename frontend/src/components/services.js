@@ -7,6 +7,7 @@ import removeIcon from '../icons/ic_remove_circle_red_18px.svg'
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 import axios from 'axios';
 import Loadable from 'react-loading-overlay'
+import { Chart } from 'react-google-charts'
 
 class Services extends Component {
 
@@ -60,6 +61,9 @@ class Services extends Component {
     const { modal } = this.state
     const namespace = this.props.match.params.namespace
     const services = this.props.swarm.servicesByNamespace[namespace]
+    const memoryData = _.map(services,(s) => [s.name,s.memory])
+    const cpuData = _.map(services,(s) => [s.name,s.cpu*100])
+
     return (
       <Loadable
         spinner
@@ -125,6 +129,36 @@ class Services extends Component {
                 }
               </tbody>
             </table>
+            <div className="row">
+              <div className="col">
+                <Chart
+                  chartType="PieChart"
+                  data={[
+                    ['Namespace', 'Bytes Used'],
+                    ...memoryData
+                  ]}
+                  options={ {title: "Memory Usage"} }
+                  pieHole={0.4}
+                  width="100%"
+                  graph_id="MemoryChart"
+                />
+              </div>
+
+              <div className="col">
+                <Chart
+                  chartType="PieChart"
+                  data={[
+                    ['Namespace', '%CPU'],
+                    ...cpuData
+                  ]}
+                  options={ {title: "CPU Usage"} }
+                  width="100%"
+                  pieHole={0.4}
+                  graph_id="CPUChart"
+                />
+              </div>
+            </div>
+
           </div>
         }
 
