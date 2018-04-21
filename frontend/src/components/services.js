@@ -97,148 +97,171 @@ class Services extends Component {
               null
         }
         </div>
-        {
-          <div className="container-fluid">
-            <h3>Namespace: {namespaceName}</h3>
-            <table className="table table-striped table-hover">
-              <thead className="thead">
-                <tr>
-                  <th>Name</th>
-                  <th>Status</th>
-                  <th style={ {textAlign: 'right'} } >Memory Usage</th>
-                  <th style={ {textAlign: 'right'} } >% CPU Usage</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {
-                  _.map(
-                     services,
-                    (s) =>(
-                      <tr key={s.id}>
-                        <td>{s.name}</td>
-                        <td><span className="badge badge-info badge-pill">{s.status}</span></td>
-                        <td style={ {textAlign: 'right'} } >{filesize(s.memory || 0)}</td>
-                        <td style={ {textAlign: 'right'} } >{(s.cpu * 100).toFixed(2)}</td>
-                        <td>
-                          <img src={removeIcon} onClick={() =>{
-                            this.setState({
-                              modal: {
-                                title: 'Delete Service Confirmation',
-                                text: `Do you really want to delete service ${s.name}?`,
-                                confirmText: 'Delete!',
-                                showCancel: true,
-                                confirmAction: () => this.deleteService(s.id, s.name)
+        <div className="container-fluid">
+          <div className="card mt-3">
+            <div className="card-header">
+              Services for {namespaceName}
+            </div>
+            <div className="card-body">
+              <table className="table table-hover table-sm">
+                <thead className="thead thead-light">
+                  <tr>
+                    <th>Name</th>
+                    <th>Status</th>
+                    <th style={ {textAlign: 'right'} } >Memory Usage</th>
+                    <th style={ {textAlign: 'right'} } >% CPU Usage</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {
+                    _.map(
+                       services,
+                      (s) =>(
+                        <tr key={s.id}>
+                          <td>{s.name}</td>
+                          <td><span className="badge badge-info badge-pill">{s.status}</span></td>
+                          <td style={ {textAlign: 'right'} } >{filesize(s.memory || 0)}</td>
+                          <td style={ {textAlign: 'right'} } >{(s.cpu * 100).toFixed(2)}</td>
+                          <td>
+                            <img src={removeIcon} onClick={() =>{
+                              this.setState({
+                                modal: {
+                                  title: 'Delete Service Confirmation',
+                                  text: `Do you really want to delete service ${s.name}?`,
+                                  confirmText: 'Delete!',
+                                  showCancel: true,
+                                  confirmAction: () => this.deleteService(s.id, s.name)
+                                }
                               }
-                            }
-                        )} } />
-                        </td>
-                      </tr>
+                          )} } />
+                          </td>
+                        </tr>
+                      )
                     )
-                  )
-                }
-              </tbody>
-            </table>
-
-            <div className="row">
-              <div className="col">
-                <Chart
-                  chartType="PieChart"
-                  data={[
-                    ['Namespace', 'Bytes Used'],
-                    ...memoryData
-                  ]}
-                  options={ {title: "Memory Usage"} }
-                  pieHole={0.4}
-                  width="100%"
-                  graph_id="MemoryChart"
-                />
-              </div>
-
-              <div className="col">
-                <Chart
-                  chartType="PieChart"
-                  data={[
-                    ['Namespace', '%CPU'],
-                    ...cpuData
-                  ]}
-                  options={ {title: "CPU Usage"} }
-                  width="100%"
-                  pieHole={0.4}
-                  graph_id="CPUChart"
-                />
-              </div>
-            </div>
-
-            <div className="row">
-              <div className="col">
-              <Chart
-                chartType="LineChart"
-                columns={[
-                  {
-                    label: 'time',
-                    type: 'datetime'
-                  },
-                  {
-                    label: 'memory (Mbytes)',
-                    type: 'number'
-                  },
-
-                ]}
-                rows={memoryHistory}
-                options={
-                  {
-                    title: "Memory History",
-                    hAxis: {
-                       format: "HH:mm:ss",
-                       title: 'Time',
-                       slantedText: true
-                    },
-                    vAxis: {
-                      baseline: 0
-                    }
                   }
-                }
-                width="100%"
-                graph_id="MemoryHistoryChart"
-              />
-              </div>
-              <div className="col">
-              <Chart
-                chartType="LineChart"
-                columns={[
-                  {
-                    label: 'time',
-                    type: 'datetime'
-                  },
-                  {
-                    label: 'cpu (%)',
-                    type: 'number'
-                  },
-
-                ]}
-                rows={cpuHistory}
-                options={
-                  {
-                    title: "CPU History",
-                    hAxis: {
-                       format: "HH:mm:ss",
-                       title: 'Time',
-                       slantedText: true
-                    },
-                    vAxis: {
-                      baseline: 0
-                    }
-                  }
-                }
-                width="100%"
-                graph_id="CPUHistoryChart"
-              />
-              </div>
+                </tbody>
+              </table>
             </div>
-
           </div>
-        }
+
+          <div className="card mt-3">
+            <div className="card-header">
+              Memory
+            </div>
+            <div className="card-body">
+              <div className="row">
+                <div className="col-3">
+                  <Chart
+                    chartType="PieChart"
+                    data={[
+                      ['Namespace', 'Bytes Used'],
+                      ...memoryData
+                    ]}
+                    options={{
+                      legend: {
+                        position: 'bottom'
+                      }
+                    }}
+
+                    width="100%"
+                    graph_id="MemoryChart"
+                  />
+                </div>
+
+                <div className="col-9">
+                  <Chart
+                    chartType="LineChart"
+                    columns={[
+                      {
+                        type: 'datetime'
+                      },
+                      {
+                        label: 'Mbytes',
+                        type: 'number'
+                      },
+
+                    ]}
+                    rows={memoryHistory}
+                    options={
+                      {
+                        title: "Memory History",
+                        hAxis: {
+                           format: "HH:mm:ss",
+                           title: 'Time',
+                           slantedText: true
+                        },
+                        vAxis: {
+                          baseline: 0
+                        }
+                      }
+                    }
+                    width="100%"
+                    graph_id="MemoryHistoryChart"
+                  />
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <div className="card mt-3">
+            <div className="card-header">
+              CPU
+            </div>
+            <div className="card-body">
+              <div className="row">
+                <div className="col-3">
+                  <Chart
+                    chartType="PieChart"
+                    data={[
+                      ['Namespace', '%CPU'],
+                      ...cpuData
+                    ]}
+                    options={{
+                      legend: {
+                        position: 'bottom'
+                      }
+                    }}
+                    width="100%"
+                    graph_id="CPUChart"
+                  />
+                </div>
+                <div className="col-9">
+                  <Chart
+                    chartType="LineChart"
+                    columns={[
+                      {
+                        type: 'datetime'
+                      },
+                      {
+                        label: '%',
+                        type: 'number'
+                      },
+
+                    ]}
+                    rows={cpuHistory}
+                    options={
+                      {
+                        hAxis: {
+                           format: "HH:mm:ss",
+                           title: 'Time',
+                           slantedText: true
+                        },
+                        vAxis: {
+                          baseline: 0
+                        }
+                      }
+                    }
+                    width="100%"
+                    graph_id="CPUHistoryChart"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
 
       </Loadable>
     )

@@ -27,145 +27,157 @@ class Index extends Component {
     const memoryHistory = this.props.swarm.memoryHistory || []
 
     return (
-      <div>
-        <div className="container-fluid">
-          <div className="row">
-            <div className="col">
-              <h3>Namespaces</h3>
-              <table className="table table-striped table-hover">
-                <thead className="thead">
-                  <tr>
-                    <th>Name</th>
-                    <th style={ {textAlign: 'right'} } >Memory Usage</th>
-                    <th style={ {textAlign: 'right'} } >% CPU Usage</th>
+      <div className="container-fluid">
+        <div className="card mt-3">
+          <div className="card-header">
+            Namespaces
+          </div>
+          <div className="card-body">
+            <table className="table table-hover table-sm">
+              <thead className="thead thead-light">
+                <tr>
+                  <th>Name</th>
+                  <th style={ {textAlign: 'right'} } >Memory Usage</th>
+                  <th style={ {textAlign: 'right'} } >% CPU Usage</th>
+                </tr>
+              </thead>
+              <tbody>
+              {
+                _.map(this.props.swarm.namespaces, (ns) => (
+                  <tr key={ns.namespace} onClick={ () => {this.props.history.push(`/namespaces/${ns.namespace}`)}}>
+                    <td>{ns.namespace}</td>
+                    <td style={ {textAlign: 'right'} } >{filesize(ns.memory || 0)}</td>
+                    <td style={ {textAlign: 'right'} } >{(ns.cpu * 100).toFixed(2)}</td>
                   </tr>
-                </thead>
-                <tbody>
-                {
-                  _.map(this.props.swarm.namespaces, (ns) => (
-                    <tr key={ns.namespace} onClick={ () => {this.props.history.push(`/namespaces/${ns.namespace}`)}}>
-                      <td>{ns.namespace}</td>
-                      <td style={ {textAlign: 'right'} } >{filesize(ns.memory || 0)}</td>
-                      <td style={ {textAlign: 'right'} } >{(ns.cpu * 100).toFixed(2)}</td>
-                    </tr>
-                  ))
+                ))
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="card mt-3">
+          <div className="card-header">
+            Memory
+          </div>
+          <div className="card-body">
+            <div className="row">
+              <div className="col-3">
+                <Chart
+                  chartType="PieChart"
+                  data={[
+                    ['Namespace', 'Bytes Used'],
+                    ...memoryData
+                  ]}
+                  options={
+                    {
+                      title: "Memory Usage",
+                      legend: {
+                        position: 'bottom'
+                      }
+                    }
                   }
-                </tbody>
-              </table>
+
+                  width="100%"
+                  graph_id="MemoryChart"
+                />
+              </div>
+              <div className="col-9">
+                <Chart
+                  chartType="LineChart"
+                  columns={[
+                    {
+                      type: 'datetime'
+                    },
+                    {
+                      label: 'Mbytes',
+                      type: 'number'
+                    },
+
+                  ]}
+                  rows={memoryHistory}
+                  options={
+                    {
+                      hAxis: {
+                         format: "HH:mm:ss",
+                         title: 'Time',
+                         slantedText: true
+                      },
+                      vAxis: {
+                        baseline: 0
+                      }
+                    }
+                  }
+                  width="100%"
+                  graph_id="MemoryHistoryChart"
+                />
               </div>
             </div>
-
-          <div className="row">
-            <div className="col">
-              <Chart
-                chartType="PieChart"
-                data={[
-                  ['Namespace', 'Bytes Used'],
-                  ...memoryData
-                ]}
-                options={
-                  {
-                    title: "Memory Usage",
-                    legend: {
-                      position: 'bottom'
-                    }
-                  }
-                }
-
-                width="100%"
-                graph_id="MemoryChart"
-              />
-            </div>
-
-            <div className="col">
-              <Chart
-                chartType="PieChart"
-                data={[
-                  ['Namespace', '%CPU'],
-                  ...cpuData
-                ]}
-                options={
-                  {
-                    title: "CPU Usage",
-                    legend: {
-                      position: 'bottom'
-                    }
-                  }
-                }
-                width="100%"
-                pieHole={0.4}
-                graph_id="CPUChart"
-              />
-            </div>
           </div>
-          <div className="row">
-            <div className="col">
-              <Chart
-                chartType="LineChart"
-                columns={[
-                  {
-                    label: 'time',
-                    type: 'datetime'
-                  },
-                  {
-                    label: 'cpu (%)',
-                    type: 'number'
-                  },
-
-                ]}
-                rows={cpuHistory}
-                options={
-                  {
-                    title: "CPU History",
-                    hAxis: {
-                       format: "HH:mm:ss",
-                       title: 'Time',
-                       slantedText: true
-                    },
-                    vAxis: {
-                      baseline: 0
-                    }
-                  }
-                }
-                width="100%"
-                graph_id="CPUHistoryChart"
-              />
-            </div>
-            <div className="col">
-              <Chart
-                chartType="LineChart"
-                columns={[
-                  {
-                    label: 'time',
-                    type: 'datetime'
-                  },
-                  {
-                    label: 'memory (Mbytes)',
-                    type: 'number'
-                  },
-
-                ]}
-                rows={memoryHistory}
-                options={
-                  {
-                    title: "Memory History",
-                    hAxis: {
-                       format: "HH:mm:ss",
-                       title: 'Time',
-                       slantedText: true
-                    },
-                    vAxis: {
-                      baseline: 0
-                    }
-                  }
-                }
-                width="100%"
-                graph_id="MemoryHistoryChart"
-              />
-            </div>
-          </div>
-
         </div>
+
+
+        <div className="card  mt-3">
+        <div className="card-header">
+          CPU
+        </div>
+
+          <div className="card-body">
+            <div className="row">
+              <div className="col-3">
+                <Chart
+                  chartType="PieChart"
+                  data={[
+                    ['Namespace', '%CPU'],
+                    ...cpuData
+                  ]}
+                  options={
+                    {
+                      legend: {
+                        position: 'bottom'
+                      }
+                    }
+                  }
+                  width="100%"
+                  graph_id="CPUChart"
+                />
+              </div>
+
+              <div className="col-9">
+                <Chart
+                  chartType="LineChart"
+                  columns={[
+                    {
+                      type: 'datetime'
+                    },
+                    {
+                      label: '%',
+                      type: 'number'
+                    },
+
+                  ]}
+                  rows={cpuHistory}
+                  options={
+                    {
+                      hAxis: {
+                         format: "HH:mm:ss",
+                         title: 'Time',
+                         slantedText: true
+                      },
+                      vAxis: {
+                        baseline: 0
+                      }
+                    }
+                  }
+                  width="100%"
+                  graph_id="CPUHistoryChart"
+                />
+              </div>
+
+            </div>
+          </div>
+        </div>
+
       </div>
     )
   }
