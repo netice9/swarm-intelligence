@@ -59,10 +59,20 @@ class Services extends Component {
   render() {
 
     const { modal } = this.state
-    const namespace = this.props.match.params.namespace
-    const services = this.props.swarm.servicesByNamespace[namespace]
+    const namespaceName = this.props.match.params.namespace
+    const namespace = _.find((this.props.swarm.namespaces || []), ns => namespaceName === ns.namespace)
+
+    if (!namespace) {
+      return "Loading ..."
+    }
+
+    const services = namespace.services
+
     const memoryData = _.map(services,(s) => [s.name,s.memory])
     const cpuData = _.map(services,(s) => [s.name,s.cpu*100])
+
+    const {cpuHistory, memoryHistory} = namespace
+
 
     return (
       <Loadable
@@ -88,8 +98,8 @@ class Services extends Component {
         }
         </div>
         {
-          <div className="container">
-            <h3>Namespace: {namespace}</h3>
+          <div className="container-fluid">
+            <h3>Namespace: {namespaceName}</h3>
             <table className="table table-striped table-hover">
               <thead className="thead">
                 <tr>
@@ -129,6 +139,7 @@ class Services extends Component {
                 }
               </tbody>
             </table>
+
             <div className="row">
               <div className="col">
                 <Chart
@@ -156,6 +167,73 @@ class Services extends Component {
                   pieHole={0.4}
                   graph_id="CPUChart"
                 />
+              </div>
+            </div>
+
+            <div className="row">
+              <div className="col">
+              <Chart
+                chartType="LineChart"
+                columns={[
+                  {
+                    label: 'time',
+                    type: 'datetime'
+                  },
+                  {
+                    label: 'memory (Mbytes)',
+                    type: 'number'
+                  },
+
+                ]}
+                rows={memoryHistory}
+                options={
+                  {
+                    title: "Memory History",
+                    hAxis: {
+                       format: "HH:mm:ss",
+                       title: 'Time',
+                       slantedText: true
+                    },
+                    vAxis: {
+                      baseline: 0
+                    }
+                  }
+                }
+                width="100%"
+                graph_id="MemoryHistoryChart"
+              />
+              </div>
+              <div className="col">
+              <Chart
+                chartType="LineChart"
+                columns={[
+                  {
+                    label: 'time',
+                    type: 'datetime'
+                  },
+                  {
+                    label: 'cpu (%)',
+                    type: 'number'
+                  },
+
+                ]}
+                rows={cpuHistory}
+                options={
+                  {
+                    title: "CPU History",
+                    hAxis: {
+                       format: "HH:mm:ss",
+                       title: 'Time',
+                       slantedText: true
+                    },
+                    vAxis: {
+                      baseline: 0
+                    }
+                  }
+                }
+                width="100%"
+                graph_id="CPUHistoryChart"
+              />
               </div>
             </div>
 

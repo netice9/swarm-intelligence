@@ -6,6 +6,16 @@ import moment from 'moment'
 
 const MAX_HISTORY_SIZE=60
 
+
+const addToHistory = (history, element) => {
+  let newHistory = [...(history || []), element]
+
+  while (newHistory.length > MAX_HISTORY_SIZE) {
+    newHistory = [...newHistory].slice(1)
+  }
+  return newHistory
+}
+
 const rootReducer = combineReducers(
   {
     websocketConnected: (state = false, action) => {
@@ -74,48 +84,53 @@ const rootReducer = combineReducers(
 
         const serviceList = _.map(
           action.payload.services,
-          (s) => ({
-            name: s.Spec.Name,
-            id: s.ID,
-            status: _.map(tasksByServiceID[s.ID], (t)=> t.Status.State)[0],
-            createdAt: s.CreatedAt,
-            memory: _.sum(_.map((containersByServiceID[s.ID] || []),(c) => c.stats.memory_stats.usage)),
-            cpu: cpuUsage(s.ID),
-            namespace: s.Spec.Labels['com.docker.stack.namespace'] || 'default'
-          })
+          (s) => {
+            const cpu = cpuUsage(s.ID)
+            const namespace = s.Spec.Labels['com.docker.stack.namespace'] || 'default'
+            const memory = _.sum(_.map((containersByServiceID[s.ID] || []),(c) => c.stats.memory_stats.usage))
+            const oldServiceState = _.find(_.flatten(_.values(_.map(oldState.namespaces, ns => ns.services))), os => {return os.id === s.ID}) || {}
+            return {
+              cpuHistory: addToHistory(oldServiceState.cpuHistory, [new Date(Date.parse(action.payload.time)),cpu*100]),
+              memoryHistory: addToHistory(oldServiceState.memoryHistory, [new Date(Date.parse(action.payload.time)),memory/(1024*1024)]),
+              memory: memory,
+              cpu: cpu,
+              name: s.Spec.Name,
+              id: s.ID,
+              status: _.map(tasksByServiceID[s.ID], (t)=> t.Status.State)[0],
+              createdAt: s.CreatedAt,
+              namespace
+            }
+          }
         )
 
         const byNamespace = _.groupBy(serviceList, 'namespace')
 
-        const namespaces = _.map(byNamespace, (services, ns) => ({
-          namespace: ns,
-          cpu: _.sumBy(services,'cpu'),
-          memory: _.sumBy(services, 'memory'),
-          createdAt: _.minBy(services, 'createdAt')
-        }))
+        const namespaces = _.map(byNamespace, (services, ns) => {
 
+          const oldNamespace = _.find(oldState.namespaces, oldNS => oldNS.namespace === ns) || { cpu: 0, memory: 0}
+          const cpu = _.sumBy(services,'cpu')
+          const memory = _.sumBy(services, 'memory')
+          return {
+            cpuHistory: addToHistory(oldNamespace.cpuHistory, [new Date(Date.parse(action.payload.time)),cpu*100]),
+            memoryHistory: addToHistory(oldNamespace.memoryHistory, [new Date(Date.parse(action.payload.time)),memory/(1024*1024)]),
+            namespace: ns,
+            cpu,
+            memory,
+            createdAt: _.minBy(services, 'createdAt'),
+            services
+          }
+      })
 
         const cpu = _.sumBy(namespaces, 'cpu')
-        let cpuHistory = [...(oldState.cpuHistory || []), [new Date(Date.parse(action.payload.time)),cpu*100]]
-
-        while (cpuHistory.length > MAX_HISTORY_SIZE) {
-          cpuHistory = [...cpuHistory].slice(1)
-        }
 
         const memory = _.sumBy(namespaces, 'memory')
-        let memoryHistory = [...(oldState.memoryHistory || []), [new Date(Date.parse(action.payload.time)),memory/(1024*1024)]]
-
-        while (memoryHistory.length > MAX_HISTORY_SIZE) {
-          memoryHistory = [...memoryHistory].slice(1)
-        }
 
         const state = {
-          cpuHistory,
-          memoryHistory,
+          cpuHistory: addToHistory(oldState.cpuHistory, [new Date(Date.parse(action.payload.time)),cpu*100]),
+          memoryHistory: addToHistory(oldState.memoryHistory, [new Date(Date.parse(action.payload.time)),memory/(1024*1024)]),
           cpu: cpu,
           memory: memory,
-          namespaces: _.sortBy(namespaces, 'createdAt'),
-          servicesByNamespace: byNamespace
+          namespaces: _.sortBy(namespaces, 'createdAt')
         }
 
         return state
