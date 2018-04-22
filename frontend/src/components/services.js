@@ -9,7 +9,7 @@ import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 import axios from 'axios';
 import Loadable from 'react-loading-overlay'
 import { Chart } from 'react-google-charts'
-import { LazyLog, ScrollFollow } from 'react-lazylog'
+import LogTailer from './log_tailer'
 
 class Services extends Component {
 
@@ -139,13 +139,7 @@ class Services extends Component {
                             this.setState({
                               modal: {
                                 title: `Logs for ${s.name}`,
-                                text: (<div style={{height: 600}}>test<ScrollFollow
-                                          startFollowing
-                                          render={({ onScroll, follow, startFollowing, stopFollowing }) => (
-                                            <LazyLog fetchOptions={ { credentials: 'same-origin' } } style={{marginBottom: 10}} rowHeight={20} url={`/api/services/${s.id}/logs`} stream onScroll={onScroll} follow={follow} />
-                                          )}
-                                        />
-                                      </div>),
+                                text: (<LogTailer url={`/api/services/${s.id}/logs`} />),
                                 confirmText: 'Close'
                               }
                             }

@@ -20,6 +20,7 @@ module.exports = {
             presets: ['react', 'es2015', 'stage-1']
           }
         },
+        exclude: /node_modules/,
         test: /\.js$/
       },
       {
