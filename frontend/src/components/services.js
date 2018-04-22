@@ -9,7 +9,7 @@ import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 import axios from 'axios';
 import Loadable from 'react-loading-overlay'
 import { Chart } from 'react-google-charts'
-import { LazyLog, ScrollFollow } from 'react-lazylog'
+import { LazyLog, ScrollFollow } from 'react-lazylog/es5'
 
 class Services extends Component {
 
