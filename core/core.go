@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"sync/atomic"
 	"time"
@@ -32,6 +33,14 @@ func DeleteService(serviceID string) error {
 }
 
 var c *client.Client
+
+func ServiceLogs(serviceID string) (io.ReadCloser, error) {
+	return c.ServiceLogs(context.Background(), serviceID, types.ContainerLogsOptions{
+		ShowStdout: true,
+		Timestamps: false,
+		Follow:     true,
+	})
+}
 
 func init() {
 

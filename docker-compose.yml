@@ -23,6 +23,8 @@ services:
     build:
       context: 'docker-dev'
       dockerfile: 'Dockerfile-go'
+    ports:
+      - 9090:8080
     environment:
       DOCKER_HOST: tcp://swarm:2375
     depends_on:

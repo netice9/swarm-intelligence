@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"time"
 
+	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	auth "github.com/nabeken/negroni-auth"
@@ -117,6 +118,24 @@ func Start(bind, aggregatorBind string) error {
 			http.Error(w, err.Error(), 500)
 			return
 		}
+	})
+
+	r.Methods("GET").Path("/api/services/{serviceID}/logs").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		serviceID := mux.Vars(r)["serviceID"]
+
+		w.Header().Set("Content-Type", "text/event-stream")
+
+		rc, err := core.ServiceLogs(serviceID)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		defer rc.Close()
+
+		fw := flushWriter{w}
+
+		stdcopy.StdCopy(fw, fw, rc)
+
 	})
 
 	n := negroni.New()

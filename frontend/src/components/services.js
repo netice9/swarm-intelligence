@@ -4,10 +4,12 @@ import { Link } from 'react-router-dom'
 import _ from 'lodash'
 import filesize from 'filesize'
 import removeIcon from '../icons/ic_remove_circle_red_18px.svg'
+import viewIcon from '../icons/ic_visibility_black_18px.svg'
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 import axios from 'axios';
 import Loadable from 'react-loading-overlay'
 import { Chart } from 'react-google-charts'
+import { LazyLog, ScrollFollow } from 'react-lazylog'
 
 class Services extends Component {
 
@@ -80,23 +82,21 @@ class Services extends Component {
         active={!!this.state.loadingText}
         text={this.state.loadingText}
       >
-        <div>
-          {
-            this.state.modal ?
-              <Modal isOpen={true} toggle={this.toggleModal}>
-                <ModalHeader toggle={this.toggleModal}>{modal.title}</ModalHeader>
-                <ModalBody>
-                  { modal.text }
-                </ModalBody>
-                <ModalFooter>
-                  <Button color="warning" onClick={modal.confirmAction}>{modal.confirmText}</Button>{' '}
-                  { modal.showCancel ? <Button color="secondary" onClick={this.toggleModal}>Cancel</Button> : null }
-                </ModalFooter>
-              </Modal>
-              :
-              null
+        {
+          this.state.modal &&
+          <Modal isOpen={true} toggle={this.toggleModal} size="lg">
+            <ModalHeader toggle={this.toggleModal}>{modal.title}</ModalHeader>
+            <ModalBody>
+              { modal.text }
+            </ModalBody>
+            <ModalFooter>
+              { modal.confirmText && <Button color="warning" onClick={modal.confirmAction}>{modal.confirmText}</Button> }
+              {' '}
+              { modal.showCancel && <Button color="secondary" onClick={this.toggleModal}>Cancel</Button> }
+            </ModalFooter>
+          </Modal>
         }
-        </div>
+
         <div className="container-fluid">
           <div className="card mt-3">
             <div className="card-header">
@@ -135,6 +135,21 @@ class Services extends Component {
                                 }
                               }
                           )} } />
+                          <img src={viewIcon} onClick={() =>{
+                            this.setState({
+                              modal: {
+                                title: `Logs for ${s.name}`,
+                                text: (<div style={{height: 600}}>test<ScrollFollow
+                                          startFollowing
+                                          render={({ onScroll, follow, startFollowing, stopFollowing }) => (
+                                            <LazyLog style={{marginBottom: 10}} rowHeight={20} url={`/api/services/${s.id}/logs`} stream onScroll={onScroll} follow={follow} />
+                                          )}
+                                        />
+                                      </div>),
+                                confirmText: 'Close'
+                              }
+                            }
+                        )} } />
                           </td>
                         </tr>
                       )
