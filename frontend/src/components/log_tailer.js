@@ -1,6 +1,9 @@
 import React, { Component } from 'react'
 import { Terminal } from 'xterm'
 import "xterm/dist/xterm.css"
+import * as fit from 'xterm/lib/addons/fit/fit'
+
+Terminal.applyAddon(fit)
 
 export default class LogTailer extends Component {
 
@@ -9,6 +12,7 @@ export default class LogTailer extends Component {
   componentDidMount() {
       this.term = new Terminal()
       this.term.open(this.container)
+      this.term.fit()
       if (this.props.url) {
         const decoder = new TextDecoder('utf-8')
         fetch(this.props.url, {credentials: 'same-origin'})

@@ -37,8 +37,9 @@ var c *client.Client
 func ServiceLogs(serviceID string) (io.ReadCloser, error) {
 	return c.ServiceLogs(context.Background(), serviceID, types.ContainerLogsOptions{
 		ShowStdout: true,
-		Timestamps: false,
+		Timestamps: true,
 		Follow:     true,
+		Tail:       "2000",
 	})
 }
 

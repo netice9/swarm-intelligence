@@ -84,7 +84,7 @@ class Services extends Component {
       >
         {
           this.state.modal &&
-          <Modal isOpen={true} toggle={this.toggleModal} size="lg">
+          <Modal isOpen={true} toggle={this.toggleModal} style={{maxWidth: '90%'}}>
             <ModalHeader toggle={this.toggleModal}>{modal.title}</ModalHeader>
             <ModalBody>
               { modal.text }
@@ -139,8 +139,8 @@ class Services extends Component {
                             this.setState({
                               modal: {
                                 title: `Logs for ${s.name}`,
-                                text: (<LogTailer url={`/api/services/${s.id}/logs`} />),
-                                confirmText: 'Close'
+                                text: (<LogTailer url={`/api/services/${s.id}/logs`} />)
+
                               }
                             }
                         )} } />
