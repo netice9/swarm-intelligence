@@ -23,8 +23,8 @@ class Index extends Component {
 
     const cpuData = _.map(this.props.swarm.namespaces,(ns) => [ns.namespace,ns.cpu*100])
 
-    const cpuHistory = this.props.swarm.cpuHistory || []
-    const memoryHistory = this.props.swarm.memoryHistory || []
+    const cpuHistory = this.props.swarm.cpuHistory || [[new Date(0),0]]
+    const memoryHistory = this.props.swarm.memoryHistory || [[new Date(0),0]]
 
     return (
       <div className="container-fluid">
