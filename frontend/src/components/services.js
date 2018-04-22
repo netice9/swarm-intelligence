@@ -142,7 +142,7 @@ class Services extends Component {
                                 text: (<div style={{height: 600}}>test<ScrollFollow
                                           startFollowing
                                           render={({ onScroll, follow, startFollowing, stopFollowing }) => (
-                                            <LazyLog style={{marginBottom: 10}} rowHeight={20} url={`/api/services/${s.id}/logs`} stream onScroll={onScroll} follow={follow} />
+                                            <LazyLog fetchOptions={ { credentials: 'same-origin' } } style={{marginBottom: 10}} rowHeight={20} url={`/api/services/${s.id}/logs`} stream onScroll={onScroll} follow={follow} />
                                           )}
                                         />
                                       </div>),
