@@ -11,7 +11,7 @@ export default class LogTailer extends Component {
       this.term.open(this.container)
       if (this.props.url) {
         const decoder = new TextDecoder('utf-8')
-        fetch(this.props.url)
+        fetch(this.props.url, {credentials: 'same-origin'})
         .then((response) => response.body)
         .then((body) => body.getReader())
         .then((reader) => {
