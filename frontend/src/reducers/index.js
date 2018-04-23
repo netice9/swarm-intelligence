@@ -125,12 +125,15 @@ const rootReducer = combineReducers(
 
         const memory = _.sumBy(namespaces, 'memory')
 
+        const volumes = _.sortBy(action.payload.volumes || [], 'Name')
+
         const state = {
           cpuHistory: addToHistory(oldState.cpuHistory, [new Date(Date.parse(action.payload.time)),cpu*100]),
           memoryHistory: addToHistory(oldState.memoryHistory, [new Date(Date.parse(action.payload.time)),memory/(1024*1024)]),
           cpu: cpu,
           memory: memory,
-          namespaces: _.sortBy(namespaces, 'createdAt')
+          namespaces: _.sortBy(namespaces, 'createdAt'),
+          volumes
         }
 
         return state

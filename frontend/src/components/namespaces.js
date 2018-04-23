@@ -28,31 +28,70 @@ class Index extends Component {
 
     return (
       <div className="container-fluid">
-        <div className="card mt-3">
-          <div className="card-header">
-            Namespaces
+        <div className="row mt-3">
+          <div className="col">
+            <div className="card">
+              <div className="card-header">
+                Namespaces
+              </div>
+              <div className="card-body">
+                <table className="table table-hover table-sm">
+                  <thead className="thead thead-light">
+                    <tr>
+                      <th>Name</th>
+                      <th style={ {textAlign: 'right'} } >Memory Usage</th>
+                      <th style={ {textAlign: 'right'} } >% CPU Usage</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  {
+                    _.map(this.props.swarm.namespaces, (ns) => (
+                      <tr key={ns.namespace} onClick={ () => {this.props.history.push(`/namespaces/${ns.namespace}`)}}>
+                        <td>{ns.namespace}</td>
+                        <td style={ {textAlign: 'right'} } >{filesize(ns.memory || 0)}</td>
+                        <td style={ {textAlign: 'right'} } >{(ns.cpu * 100).toFixed(2)}</td>
+                      </tr>
+                    ))
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
-          <div className="card-body">
-            <table className="table table-hover table-sm">
-              <thead className="thead thead-light">
-                <tr>
-                  <th>Name</th>
-                  <th style={ {textAlign: 'right'} } >Memory Usage</th>
-                  <th style={ {textAlign: 'right'} } >% CPU Usage</th>
-                </tr>
-              </thead>
-              <tbody>
-              {
-                _.map(this.props.swarm.namespaces, (ns) => (
-                  <tr key={ns.namespace} onClick={ () => {this.props.history.push(`/namespaces/${ns.namespace}`)}}>
-                    <td>{ns.namespace}</td>
-                    <td style={ {textAlign: 'right'} } >{filesize(ns.memory || 0)}</td>
-                    <td style={ {textAlign: 'right'} } >{(ns.cpu * 100).toFixed(2)}</td>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col">
+            <div className="card">
+              <div className="card-header">
+                Volumes
+              </div>
+              <div className="card-body">
+              <table className="table table-sm">
+                <thead className="thead thead-light">
+                  <tr>
+                    <th>Name</th>
+                    <th>Created At</th>
+                    <th>Driver</th>
+                    <th>Scope</th>
+
                   </tr>
-                ))
-                }
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                {
+                  _.map(this.props.swarm.volumes, (v) => (
+                    <tr key={v.Name} >
+                      <td>{v.Name}</td>
+                      <td>{v.CreatedAt}</td>
+                      <td>{v.Driver}</td>
+                      <td>{v.Scope}</td>
+                    </tr>
+                  ))
+                  }
+                </tbody>
+              </table>
+              </div>
+            </div>
           </div>
         </div>
 

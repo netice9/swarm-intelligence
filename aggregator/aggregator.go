@@ -26,7 +26,7 @@ func init() {
 			stale := []string{}
 			n := time.Now()
 			for r, s := range agentStates {
-				if n.Sub(s.Time) > 30*time.Second {
+				if n.Sub(s.Time) > 90*time.Second {
 					stale = append(stale, r)
 				}
 			}
@@ -41,6 +41,17 @@ func init() {
 	}()
 }
 
+type volumeList []*types.Volume
+
+func (vl volumeList) hasVolume(name string) bool {
+	for _, v := range vl {
+		if v.Name == name {
+			return true
+		}
+	}
+	return false
+}
+
 func State() core.State {
 	l.Lock()
 	defer l.Unlock()
@@ -50,6 +61,8 @@ func State() core.State {
 		Stats: map[string]types.Stats{},
 	}
 
+	volumes := volumeList{}
+
 	for _, rs := range agentStates {
 		s.Tasks = rs.Tasks
 		s.Services = rs.Services
@@ -57,7 +70,16 @@ func State() core.State {
 		for id, st := range rs.Stats {
 			s.Stats[id] = st
 		}
+
+		for _, v := range rs.Volumes {
+			if !volumes.hasVolume(v.Name) {
+				volumes = append(volumes, v)
+			}
+		}
+
 	}
+
+	s.Volumes = volumes
 
 	return s
 }

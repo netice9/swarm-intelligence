@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/client"
 )
@@ -20,6 +21,7 @@ type State struct {
 	Tasks      []swarm.Task           `json:"tasks"`
 	Containers []types.Container      `json:"containers"`
 	Stats      map[string]types.Stats `json:"stats"`
+	Volumes    []*types.Volume        `json:"volumes"`
 }
 
 var currentState atomic.Value
@@ -71,6 +73,11 @@ func init() {
 				log.Printf("Error fetching containers: %s", err.Error())
 			}
 
+			vl, err := c.VolumeList(context.Background(), filters.Args{})
+			if err != nil {
+				log.Printf("Error fetching containers: %s", err.Error())
+			}
+
 			stats := map[string]types.Stats{}
 
 			for _, con := range cl {
@@ -97,7 +104,9 @@ func init() {
 				Tasks:      tl,
 				Containers: cl,
 				Stats:      stats,
+				Volumes:    vl.Volumes,
 			}
+
 			currentState.Store(newState)
 			time.Sleep(time.Second)
 		}
