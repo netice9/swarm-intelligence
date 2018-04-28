@@ -39,6 +39,8 @@ class Index extends Component {
                   <thead className="thead thead-light">
                     <tr>
                       <th>Name</th>
+                      <th style={ {textAlign: 'right'} } ># Services</th>
+                      <th style={ {textAlign: 'right'} } ># Containers</th>
                       <th style={ {textAlign: 'right'} } >Memory Usage</th>
                       <th style={ {textAlign: 'right'} } >% CPU Usage</th>
                     </tr>
@@ -48,6 +50,8 @@ class Index extends Component {
                     _.map(this.props.swarm.namespaces, (ns) => (
                       <tr key={ns.namespace} onClick={ () => {this.props.history.push(`/namespaces/${ns.namespace}`)}}>
                         <td>{ns.namespace}</td>
+                        <td style={ {textAlign: 'right'} } >{ns.numberOfServices || 0}</td>
+                        <td style={ {textAlign: 'right'} } >{ns.numberOfContainers || 0}</td>
                         <td style={ {textAlign: 'right'} } >{filesize(ns.memory || 0)}</td>
                         <td style={ {textAlign: 'right'} } >{(ns.cpu * 100).toFixed(2)}</td>
                       </tr>

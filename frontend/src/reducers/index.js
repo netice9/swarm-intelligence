@@ -88,6 +88,7 @@ const rootReducer = combineReducers(
             const cpu = cpuUsage(s.ID)
             const namespace = s.Spec.Labels['com.docker.stack.namespace'] || 'default'
             const memory = _.sum(_.map((containersByServiceID[s.ID] || []),(c) => c.stats.memory_stats.usage))
+            const numberOfContainers = (containersByServiceID[s.ID] || []).length
             const oldServiceState = _.find(_.flatten(_.values(_.map(oldState.namespaces, ns => ns.services))), os => {return os.id === s.ID}) || {}
             return {
               cpuHistory: addToHistory(oldServiceState.cpuHistory, [new Date(Date.parse(action.payload.time)),cpu*100]),
@@ -98,6 +99,7 @@ const rootReducer = combineReducers(
               id: s.ID,
               status: _.map(tasksByServiceID[s.ID], (t)=> t.Status.State)[0],
               createdAt: s.CreatedAt,
+              numberOfContainers,
               namespace
             }
           }
@@ -110,6 +112,8 @@ const rootReducer = combineReducers(
           const oldNamespace = _.find(oldState.namespaces, oldNS => oldNS.namespace === ns) || { cpu: 0, memory: 0}
           const cpu = _.sumBy(services,'cpu')
           const memory = _.sumBy(services, 'memory')
+          const numberOfServices = services.length
+          const numberOfContainers = _.sumBy(services, 'numberOfContainers')
           return {
             cpuHistory: addToHistory(oldNamespace.cpuHistory, [new Date(Date.parse(action.payload.time)),cpu*100]),
             memoryHistory: addToHistory(oldNamespace.memoryHistory, [new Date(Date.parse(action.payload.time)),memory/(1024*1024)]),
@@ -117,7 +121,9 @@ const rootReducer = combineReducers(
             cpu,
             memory,
             createdAt: _.minBy(services, 'createdAt'),
-            services
+            services,
+            numberOfServices,
+            numberOfContainers
           }
       })
 
