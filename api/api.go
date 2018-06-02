@@ -121,7 +121,7 @@ func Start(bind, aggregatorBind string) error {
 					namespaces = append(namespaces, ns)
 				}
 				if namespaces[i] != ns {
-					namespaces = append(append(namespaces[:i], ns), namespaces[i:]...)
+					namespaces = append(namespaces[:i], append([]string{ns}, namespaces[i:]...)...)
 				}
 			}
 		}
