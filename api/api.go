@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"sort"
 	"time"
 
 	"github.com/docker/docker/pkg/stdcopy"
@@ -53,11 +54,9 @@ func Start(bind, aggregatorBind string) error {
 
 		cmd := exec.Command("docker", "stack", "deploy", "-c", tf.Name(), "--prune", "--with-registry-auth", r.FormValue("name"))
 		buf := &bytes.Buffer{}
-		cmd.Stdout = buf
-		cmd.Stderr = buf
+		cmd.Stdout = w
+		cmd.Stderr = w
 		err = cmd.Run()
-
-		cmd.StdoutPipe()
 
 		if err != nil {
 			http.Error(w, buf.String(), 500)
@@ -108,6 +107,38 @@ func Start(bind, aggregatorBind string) error {
 				return
 			}
 			time.Sleep(2 * time.Second)
+		}
+	})
+
+	r.Methods("GET").Path("/api/namespaces").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		as := aggregator.State()
+		namespaces := []string{}
+		for _, se := range as.Services {
+			ns := se.Spec.Labels["com.docker.stack.namespace"]
+			if ns != "" {
+				i := sort.SearchStrings(namespaces, ns)
+				if i == len(namespaces) {
+					namespaces = append(namespaces, ns)
+				}
+				if namespaces[i] != ns {
+					namespaces = append(append(namespaces[:i], ns), namespaces[i:]...)
+				}
+			}
+		}
+		r.Header.Add("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(namespaces)
+	})
+
+	r.Methods("DELETE").Path("/api/namespaces/{namespace}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ns := mux.Vars(r)["namespace"]
+		cmd := exec.Command("docker", "stack", "deploy", "rm", ns)
+		buf := &bytes.Buffer{}
+		cmd.Stdout = w
+		cmd.Stderr = w
+		err := cmd.Run()
+
+		if err != nil {
+			http.Error(w, buf.String(), 500)
 		}
 	})
 
