@@ -131,7 +131,7 @@ func Start(bind, aggregatorBind string) error {
 
 	r.Methods("DELETE").Path("/api/namespaces/{namespace}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ns := mux.Vars(r)["namespace"]
-		cmd := exec.Command("docker", "stack", "deploy", "rm", ns)
+		cmd := exec.Command("docker", "stack", "rm", ns)
 		buf := &bytes.Buffer{}
 		cmd.Stdout = w
 		cmd.Stderr = w
